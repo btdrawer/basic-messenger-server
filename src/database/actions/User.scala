@@ -2,7 +2,7 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{ApiServer, BasicApiServer, BasicApiUser, UserResult}
+import api.model.{BasicReadableServer, BasicReadableUser, CreatableUser, ReadableServer, UpdatableUser, UserResult}
 import database.queries.{User => UserQueries}
 import model.{Role, Status, User}
 
@@ -27,7 +27,7 @@ object User {
       password.matches(".*[a-z].*") &&
       password.matches(".*[A-Z].*")
 
-  def createUser(user: User)(implicit connection: Connection): UserResult = {
+  def createUser(user: CreatableUser)(implicit connection: Connection): UserResult = {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
@@ -50,13 +50,18 @@ object User {
       passwordResetStatement.setString(2, user.passwordReset.answer)
       passwordResetStatement.executeUpdate()
 
+      val userIdStatement = connection.prepareStatement(UserQueries.getUserId)
+      userIdStatement.setString(1, user.username)
+      val resultSet = userIdStatement.executeQuery()
+      resultSet.last()
+
       UserResult(
         success = true,
         user = Some(
-          BasicApiUser(
-            id = user.id,
+          BasicReadableUser(
+            id = resultSet.getString(1),
             username = user.username,
-            servers = Map[BasicApiServer, Role.Value](),
+            servers = Map[ReadableServer, Role.Value](),
             status = user.status
           )
         ),
@@ -65,26 +70,26 @@ object User {
     }
   }
 
-  private def getUserServers(id: String)(implicit connection: Connection): Map[ApiServer, Role.Value] = {
+  private def getUserServers(id: String)(implicit connection: Connection): Map[ReadableServer, Role.Value] = {
     val statement = connection.prepareStatement(UserQueries.getUserServers)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[ApiServer, Role.Value]()
+    val serverMap = Map[ReadableServer, Role.Value]()
     while(resultSet.next()) {
-      userMap + (
-        BasicApiServer(
+      serverMap + (
+        BasicReadableServer(
           resultSet.getString(1),
           resultSet.getString(2),
           resultSet.getString(3)
         ) -> resultSet.getString(4)
       )
     }
-    userMap
+    serverMap
   }
 
-  def getUserProfile(id: String)(implicit connection: Connection): UserResult = {
+  def getUser(id: String)(implicit connection: Connection): UserResult = {
     val statement = connection.prepareStatement(UserQueries.getUser)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
@@ -93,7 +98,7 @@ object User {
     if (resultSet.getRow < 1) createFailedUserResult("User not found.")
     else {
       val servers = getUserServers(id)
-      val user = BasicApiUser(
+      val user = BasicReadableUser(
         id = id,
         username = resultSet.getString(1),
         servers = servers,
@@ -108,5 +113,37 @@ object User {
         message = None
       )
     }
+  }
+
+  def updateUser(user: UpdatableUser)(implicit connection: Connection): UserResult = ???
+
+  def updateUsername(id: String, username: String)(implicit connection: Connection): UserResult = {
+    val usernameExists = checkUsernameExists(username)
+    if (usernameExists) createFailedUserResult(
+      "A user with that username already exists."
+    )
+    else {
+      val statement = connection.prepareStatement(UserQueries.updateUsername)
+      statement.setString(1, username)
+      statement.setString(2, id)
+      statement.executeUpdate()
+      UserResult(
+        success = true,
+        user = None,
+        message = Some("Your username has been updated.")
+      )
+    }
+  }
+
+  def updateStatus(id: String, status: Status)(implicit connection: Connection): UserResult = {
+    val statement = connection.prepareStatement(UserQueries.updateUsername)
+    statement.setString(1, status.id)
+    statement.setString(2, id)
+    statement.executeUpdate()
+    UserResult(
+      success = true,
+      user = None,
+      message = Some("Your status has been updated.")
+    )
   }
 }

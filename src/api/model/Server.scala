@@ -2,15 +2,15 @@ package api.model
 
 import model.{Message, Role}
 
-trait ApiServer
-case class BasicApiServer(id: String, name: String, address: String) extends ApiServer
-case class FullApiServer(
+trait ReadableServer
+case class BasicReadableServer(id: String, name: String, address: String) extends ReadableServer
+case class FullReadableServer(
   id: String,
   name: String,
   address: String,
-  users: Map[BasicApiUser, Role.Value],
+  users: Map[ReadableUser, Role.Value],
   messages: List[Message]
-) extends ApiServer
+) extends ReadableServer
 
-case class ServerResult(success: Boolean, server: ApiServer, message: Option[Message])
-case class ServerUsersResult(success: Boolean, user: Map[ApiUser, Role.Value])
+case class ServerResult(success: Boolean, server: ReadableServer, message: Option[Message])
+case class ServerUsersResult(success: Boolean, user: Map[ReadableUser, Role.Value])
