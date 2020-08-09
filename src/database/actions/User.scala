@@ -2,7 +2,7 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{BasicApiServer, BasicApiUser, UserResult}
+import api.model.{ApiServer, BasicApiServer, BasicApiUser, UserResult}
 import database.queries.{User => UserQueries}
 import model.{Role, Status, User}
 
@@ -65,13 +65,13 @@ object User {
     }
   }
 
-  private def getUserServers(id: String)(implicit connection: Connection): Map[BasicApiServer, Role.Value] = {
+  private def getUserServers(id: String)(implicit connection: Connection): Map[ApiServer, Role.Value] = {
     val statement = connection.prepareStatement(UserQueries.getUserServers)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[BasicApiServer, Role.Value]()
+    val userMap = Map[ApiServer, Role.Value]()
     while(resultSet.next()) {
       userMap + (
         BasicApiServer(

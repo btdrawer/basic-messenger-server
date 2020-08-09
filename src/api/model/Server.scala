@@ -13,4 +13,4 @@ case class FullApiServer(
 ) extends ApiServer
 
 case class ServerResult(success: Boolean, server: ApiServer, message: Option[Message])
-case class ServerUsersResult(success: Boolean, user: List[Map[BasicApiUser, Role.Value]])
+case class ServerUsersResult(success: Boolean, user: Map[ApiUser, Role.Value])
