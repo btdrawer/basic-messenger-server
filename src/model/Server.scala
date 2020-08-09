@@ -1,6 +1,7 @@
 package model
 
 case class Server(
+  id: String,
   name: String,
   address: String,
   users: Map[User, Role.Value],
