@@ -2,9 +2,9 @@ package database.actions
 
 import java.sql.Connection
 
-import database.model.{BasicServer, BasicUser, UserResult}
+import api.model.{BasicApiServer, BasicApiUser, UserResult}
 import database.queries.{User => UserQueries}
-import model.{Role, Server, Status, User}
+import model.{Role, Status, User}
 
 object User {
   private def createFailedUserResult(message: String): UserResult = UserResult(
@@ -53,10 +53,10 @@ object User {
       UserResult(
         success = true,
         user = Some(
-          BasicUser(
+          BasicApiUser(
             id = user.id,
             username = user.username,
-            servers = Map[BasicServer, Role.Value](),
+            servers = Map[BasicApiServer, Role.Value](),
             status = user.status
           )
         ),
@@ -65,16 +65,16 @@ object User {
     }
   }
 
-  private def getUserServers(id: String)(implicit connection: Connection): Map[BasicServer, Role.Value] = {
+  private def getUserServers(id: String)(implicit connection: Connection): Map[BasicApiServer, Role.Value] = {
     val statement = connection.prepareStatement(UserQueries.getUserServers)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[BasicServer, Role.Value]()
+    val userMap = Map[BasicApiServer, Role.Value]()
     while(resultSet.next()) {
       userMap + (
-        BasicServer(
+        BasicApiServer(
           resultSet.getString(1),
           resultSet.getString(2),
           resultSet.getString(3)
@@ -93,7 +93,7 @@ object User {
     if (resultSet.getRow < 1) createFailedUserResult("User not found.")
     else {
       val servers = getUserServers(id)
-      val user = BasicUser(
+      val user = BasicApiUser(
         id = id,
         username = resultSet.getString(1),
         servers = servers,
