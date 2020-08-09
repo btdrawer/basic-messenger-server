@@ -2,11 +2,11 @@ package database.actions
 
 import java.sql.Connection
 
-import database.model.UserResult
-import database.queries.UserQueries
-import model.{DatabaseUser, Role, Server, SimplifiedUser}
+import database.model.{BasicServer, BasicUser, UserResult}
+import database.queries.{User => UserQueries}
+import model.{Role, Server, Status, User}
 
-object UserActions {
+object User {
   private def createFailedUserResult(message: String): UserResult = UserResult(
     success = false,
     user = None,
@@ -27,7 +27,7 @@ object UserActions {
       password.matches(".*[a-z].*") &&
       password.matches(".*[A-Z].*")
 
-  def createUser(user: DatabaseUser)(implicit connection: Connection): UserResult = {
+  def createUser(user: User)(implicit connection: Connection): UserResult = {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
@@ -42,36 +42,42 @@ object UserActions {
       val createStatement = connection.prepareStatement(UserQueries.createUser)
       createStatement.setString(1, user.username)
       createStatement.setString(2, user.password)
+      createStatement.setString(3, user.status.id)
       createStatement.executeUpdate()
 
       val passwordResetStatement = connection.prepareStatement(UserQueries.createPasswordResetData)
-      passwordResetStatement.setString(1, user.passwordReset.question)
+      passwordResetStatement.setString(1, user.passwordReset.question.id)
       passwordResetStatement.setString(2, user.passwordReset.answer)
       passwordResetStatement.executeUpdate()
 
       UserResult(
         success = true,
-        user = Some(user),
+        user = Some(
+          BasicUser(
+            id = user.id,
+            username = user.username,
+            servers = Map[BasicServer, Role.Value](),
+            status = user.status
+          )
+        ),
         message = Some("User successfully created.")
       )
     }
   }
 
-  private def getUserServers(id: String)(implicit connection: Connection): Map[Server, Role.Value] = {
+  private def getUserServers(id: String)(implicit connection: Connection): Map[BasicServer, Role.Value] = {
     val statement = connection.prepareStatement(UserQueries.getUserServers)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[Server, Role.Value]()
+    val userMap = Map[BasicServer, Role.Value]()
     while(resultSet.next()) {
       userMap + (
-        Server(
+        BasicServer(
           resultSet.getString(1),
           resultSet.getString(2),
-          resultSet.getString(3),
-          ???,
-          ???
+          resultSet.getString(3)
         ) -> resultSet.getString(4)
       )
     }
@@ -87,11 +93,14 @@ object UserActions {
     if (resultSet.getRow < 1) createFailedUserResult("User not found.")
     else {
       val servers = getUserServers(id)
-      val user = SimplifiedUser(
+      val user = BasicUser(
         id = id,
         username = resultSet.getString(1),
         servers = servers,
-        status = resultSet.getString(2)
+        status = Status(
+          resultSet.getString(2),
+          resultSet.getString(3)
+        )
       )
       UserResult(
         success = true,

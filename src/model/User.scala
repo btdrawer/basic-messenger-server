@@ -1,21 +1,16 @@
 package model
 
-trait User
-
-case class DatabaseUser(
+case class User(
   id: String,
   username: String,
   password: String,
   servers: Map[Server, Role.Value],
-  status: String,
+  status: Status,
   passwordReset: PasswordReset
-) extends User
+)
 
-case class PasswordReset(question: String, answer: String)
+case class Status(id: String, content: String)
 
-case class SimplifiedUser(
-  id: String,
-  username: String,
-  servers: Map[Server, Role.Value],
-  status: String,
-) extends User
+case class PasswordReset(question: PasswordResetQuestion, answer: String)
+
+case class PasswordResetQuestion(id: String, content: String)
