@@ -12,5 +12,3 @@ object Role extends Enumeration {
   type Role = Value
   val Admin, Moderator, Member = Value
 }
-
-case class SimplifiedServer(id: String, name: String, address: String)

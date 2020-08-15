@@ -2,15 +2,21 @@ package api.model
 
 import model.{Message, Role}
 
-trait ReadableServer
-case class BasicReadableServer(id: String, name: String, address: String) extends ReadableServer
-case class FullReadableServer(
+case class ReadableServer(
   id: String,
   name: String,
   address: String,
-  users: Map[ReadableUser, Role.Value],
-  messages: List[Message]
-) extends ReadableServer
+  users: Option[Map[ReadableUser, Role.Value]],
+  messages: Option[List[Message]]
+)
 
-case class ServerResult(success: Boolean, server: ReadableServer, message: Option[Message])
+case class ServerResult(success: Boolean, server: Option[ReadableServer], message: Option[String])
+object ServerResult {
+  def createFailedServerResult(message: String): ServerResult = ServerResult(
+    success = false,
+    server = None,
+    message = Some(message)
+  )
+}
+
 case class ServerUsersResult(success: Boolean, user: Map[ReadableUser, Role.Value])

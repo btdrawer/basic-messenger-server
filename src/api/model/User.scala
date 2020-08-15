@@ -9,13 +9,12 @@ case class CreatableUser(
   passwordReset: PasswordReset
 )
 
-trait ReadableUser
-case class BasicReadableUser(
+case class ReadableUser(
   id: String,
   username: String,
-  servers: Map[ReadableServer, Role.Value],
+  servers: Option[Map[ReadableServer, Role.Value]],
   status: Status
-) extends ReadableUser
+)
 
 case class UpdatableUser(
   id: String,
@@ -26,3 +25,10 @@ case class UpdatableUser(
 )
 
 case class UserResult(success: Boolean, user: Option[ReadableUser], message: Option[String])
+object UserResult {
+  def createFailedUserResult(message: String): UserResult = UserResult(
+    success = false,
+    user = None,
+    message = Some(message)
+  )
+}

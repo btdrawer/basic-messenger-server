@@ -2,18 +2,12 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{BasicReadableServer, BasicReadableUser, CreatableUser, ReadableServer, UpdatableUser, UserResult}
+import api.model.{ReadableServer, ReadableUser, CreatableUser, ReadableServer, UpdatableUser, UserResult}
 import database.queries.{User => UserQueries}
 import model.{Role, Status, User}
 
 object User {
-  private def createFailedUserResult(message: String): UserResult = UserResult(
-    success = false,
-    user = None,
-    message = Some(message)
-  )
-
-  private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
+ private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
     val statement = connection.prepareStatement(UserQueries.checkUsernameExists)
     statement.setString(1, username)
     val resultSet = statement.executeQuery()
@@ -31,10 +25,10 @@ object User {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
-    if (usernameExists) createFailedUserResult(
+    if (usernameExists) UserResult.createFailedUserResult(
       "A user with that username already exists."
     )
-    else if (!passwordIsValid) createFailedUserResult(
+    else if (!passwordIsValid) UserResult.createFailedUserResult(
       "Your password must be at least 8 characters and contain " +
         "at least one lowercase letter, uppercase letter, and number."
     )
@@ -58,10 +52,12 @@ object User {
       UserResult(
         success = true,
         user = Some(
-          BasicReadableUser(
+          ReadableUser(
             id = resultSet.getString(1),
             username = user.username,
-            servers = Map[ReadableServer, Role.Value](),
+            servers = Some(
+              Map[ReadableServer, Role.Value]()
+            ),
             status = user.status
           )
         ),
@@ -79,10 +75,12 @@ object User {
     val serverMap = Map[ReadableServer, Role.Value]()
     while(resultSet.next()) {
       serverMap + (
-        BasicReadableServer(
-          resultSet.getString(1),
-          resultSet.getString(2),
-          resultSet.getString(3)
+        ReadableServer(
+          id = resultSet.getString(1),
+          name = resultSet.getString(2),
+          address = resultSet.getString(3),
+          users = None,
+          messages = None
         ) -> resultSet.getString(4)
       )
     }
@@ -95,13 +93,13 @@ object User {
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    if (resultSet.getRow < 1) createFailedUserResult("User not found.")
+    if (resultSet.getRow < 1) UserResult.createFailedUserResult("User not found.")
     else {
       val servers = getUserServers(id)
-      val user = BasicReadableUser(
+      val user = ReadableUser(
         id = id,
         username = resultSet.getString(1),
-        servers = servers,
+        servers = Some(servers),
         status = Status(
           resultSet.getString(2),
           resultSet.getString(3)
@@ -119,7 +117,7 @@ object User {
 
   def updateUsername(id: String, username: String)(implicit connection: Connection): UserResult = {
     val usernameExists = checkUsernameExists(username)
-    if (usernameExists) createFailedUserResult(
+    if (usernameExists) UserResult.createFailedUserResult(
       "A user with that username already exists."
     )
     else {
