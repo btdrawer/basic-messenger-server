@@ -17,10 +17,10 @@ case class ReadableServer(
 )
 
 case class ServerResult(
-                         success: Boolean,
-                         result: Option[ReadableServer],
-                         message: Option[String]
-                       ) extends Result[ReadableServer](success, result, message)
+  success: Boolean,
+  result: Option[ReadableServer],
+  message: Option[String]
+) extends Result[ReadableServer](success, result, message)
 
 object ServerResult {
   def success(result: Option[ReadableServer], message: Option[String]): ServerResult =
