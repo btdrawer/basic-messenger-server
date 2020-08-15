@@ -2,6 +2,12 @@ package api.model
 
 import model.{Message, Role}
 
+case class CreatableServer(
+  name: String,
+  address: String,
+  creator: ReadableUser,
+)
+
 case class ReadableServer(
   id: String,
   name: String,
@@ -10,13 +16,17 @@ case class ReadableServer(
   messages: Option[List[Message]]
 )
 
-case class ServerResult(success: Boolean, server: Option[ReadableServer], message: Option[String])
+case class ServerResult(
+                         success: Boolean,
+                         result: Option[ReadableServer],
+                         message: Option[String]
+                       ) extends Result[ReadableServer](success, result, message)
+
 object ServerResult {
-  def createFailedServerResult(message: String): ServerResult = ServerResult(
-    success = false,
-    server = None,
-    message = Some(message)
-  )
+  def success(result: Option[ReadableServer], message: Option[String]): ServerResult =
+    Result.success(result, message)
+  def fail(message: String): ServerResult = Result.fail(message)
 }
 
-case class ServerUsersResult(success: Boolean, user: Map[ReadableUser, Role.Value])
+case class ServerUsersResult(success: Boolean, result: Map[ReadableUser, Role.Value])
+  extends Result[Map[ReadableUser, Role.Value]](success, Some(result), None)

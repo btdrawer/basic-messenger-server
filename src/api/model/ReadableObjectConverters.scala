@@ -46,7 +46,7 @@ object ReadableObjectConverters {
     override def convert(message: Message): ReadableMessage = ReadableMessage(
       id = message.id,
       content = message.content,
-      server = Some(message.server.toReadable),
+      server = message.server.toReadable,
       sender = message.sender.toReadable,
       createdAt = message.createdAt
     )

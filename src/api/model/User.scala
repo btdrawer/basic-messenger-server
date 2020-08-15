@@ -24,11 +24,14 @@ case class UpdatableUser(
   passwordReset: Option[PasswordReset]
 )
 
-case class UserResult(success: Boolean, user: Option[ReadableUser], message: Option[String])
+case class UserResult(
+  success: Boolean,
+  result: Option[ReadableUser],
+  message: Option[String]
+) extends Result[ReadableUser](success, result, message)
+
 object UserResult {
-  def createFailedUserResult(message: String): UserResult = UserResult(
-    success = false,
-    user = None,
-    message = Some(message)
-  )
+  def success(result: Option[ReadableUser], message: Option[String]): UserResult =
+    Result.success(result, message)
+  def fail(message: String): UserResult = Result.fail(message)
 }

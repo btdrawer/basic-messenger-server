@@ -25,10 +25,8 @@ object User {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
-    if (usernameExists) UserResult.createFailedUserResult(
-      "A user with that username already exists."
-    )
-    else if (!passwordIsValid) UserResult.createFailedUserResult(
+    if (usernameExists) UserResult.fail("A user with that username already exists.")
+    else if (!passwordIsValid) UserResult.fail(
       "Your password must be at least 8 characters and contain " +
         "at least one lowercase letter, uppercase letter, and number."
     )
@@ -49,9 +47,8 @@ object User {
       val resultSet = userIdStatement.executeQuery()
       resultSet.last()
 
-      UserResult(
-        success = true,
-        user = Some(
+      UserResult.success(
+        result = Some(
           ReadableUser(
             id = resultSet.getString(1),
             username = user.username,
@@ -93,7 +90,7 @@ object User {
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    if (resultSet.getRow < 1) UserResult.createFailedUserResult("User not found.")
+    if (resultSet.getRow < 1) UserResult.fail("User not found.")
     else {
       val servers = getUserServers(id)
       val user = ReadableUser(
@@ -105,9 +102,8 @@ object User {
           resultSet.getString(3)
         )
       )
-      UserResult(
-        success = true,
-        user = Some(user),
+      UserResult.success(
+        result = Some(user),
         message = None
       )
     }
@@ -117,17 +113,14 @@ object User {
 
   def updateUsername(id: String, username: String)(implicit connection: Connection): UserResult = {
     val usernameExists = checkUsernameExists(username)
-    if (usernameExists) UserResult.createFailedUserResult(
-      "A user with that username already exists."
-    )
+    if (usernameExists) UserResult.fail("A user with that username already exists.")
     else {
       val statement = connection.prepareStatement(UserQueries.updateUsername)
       statement.setString(1, username)
       statement.setString(2, id)
       statement.executeUpdate()
-      UserResult(
-        success = true,
-        user = None,
+      UserResult.success(
+        result = None,
         message = Some("Your username has been updated.")
       )
     }
@@ -138,9 +131,8 @@ object User {
     statement.setString(1, status.id)
     statement.setString(2, id)
     statement.executeUpdate()
-    UserResult(
-      success = true,
-      user = None,
+    UserResult.success(
+      result = None,
       message = Some("Your status has been updated.")
     )
   }
