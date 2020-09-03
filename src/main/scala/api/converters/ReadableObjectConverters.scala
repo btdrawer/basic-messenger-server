@@ -1,6 +1,7 @@
-package api.model
+package api.converters
 
-import model.{Message, Role, Server, User}
+import api.model.{ReadableMessage, ReadableServer, ReadableUser}
+import model.{Message, Server, User}
 
 object ReadableObjectConverters {
   trait ReadableObjectConverter[A, B] {
@@ -11,24 +12,21 @@ object ReadableObjectConverters {
     def toReadable(implicit converter: ReadableObjectConverter[A, B]): B = converter convert value
   }
 
-  implicit object ReadableServerMapConverter
-    extends ReadableObjectConverter[Map[Server, Role.Value], Map[ReadableServer, Role.Value]] {
-    override def convert(users: Map[Server, Role.Value]): Map[ReadableServer, Role.Value] =
-      users.map(elem => (elem._1.toReadable, elem._2))
-  }
-
-  implicit object ReadableUserMapConverter
-    extends ReadableObjectConverter[Map[User, Role.Value], Map[ReadableUser, Role.Value]] {
-    override def convert(users: Map[User, Role.Value]): Map[ReadableUser, Role.Value] =
-      users.map(elem => (elem._1.toReadable, elem._2))
-  }
-
   implicit object ReadableServerConverter extends ReadableObjectConverter[Server, ReadableServer] {
     override def convert(server: Server): ReadableServer = ReadableServer(
       id = server.id,
       name = server.name,
       address = server.address,
-      users = Some(server.users.toReadable),
+      users = Some(
+        server.users.map(elem => (
+          ReadableUser(
+            id = elem._1.id,
+            username = elem._1.username,
+            servers = None,
+            status = elem._1.status
+          ), elem._2)
+        )
+      ),
       messages = Some(server.messages)
     )
   }
@@ -37,7 +35,17 @@ object ReadableObjectConverters {
     override def convert(user: User): ReadableUser = ReadableUser(
       id = user.id,
       username = user.username,
-      servers = Some(user.servers.toReadable),
+      servers = Some(
+        user.servers.map(elem => (
+          ReadableServer(
+            id = elem._1.id,
+            name = elem._1.name,
+            address = elem._1.address,
+            users = None,
+            messages = None
+          ), elem._2)
+        )
+      ),
       status = user.status
     )
   }
@@ -46,9 +54,10 @@ object ReadableObjectConverters {
     override def convert(message: Message): ReadableMessage = ReadableMessage(
       id = message.id,
       content = message.content,
-      server = message.server.toReadable,
+      server = Some(message.server.toReadable),
       sender = message.sender.toReadable,
       createdAt = message.createdAt
     )
   }
+
 }

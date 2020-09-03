@@ -12,7 +12,7 @@ case class CreatableMessage(
 case class ReadableMessage(
   id: String,
   content: String,
-  server: ReadableServer,
+  server: Option[ReadableServer],
   sender: ReadableUser,
   createdAt: Instant
 )
@@ -24,7 +24,14 @@ case class MessageResult(
 ) extends Result[ReadableMessage](success, result, message)
 
 object MessageResult {
-  def success(result: Option[ReadableMessage], message: Option[String]): MessageResult =
-    Result.success(result, message)
-  def fail(message: String): MessageResult = Result.fail(message)
+  def success(result: Option[ReadableMessage], message: Option[String]): MessageResult = new MessageResult(
+    true,
+    result,
+    message
+  )
+  def fail(message: String): MessageResult = new MessageResult(
+    false,
+    None,
+    Some(message)
+  )
 }

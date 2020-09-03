@@ -23,9 +23,16 @@ case class ServerResult(
 ) extends Result[ReadableServer](success, result, message)
 
 object ServerResult {
-  def success(result: Option[ReadableServer], message: Option[String]): ServerResult =
-    Result.success(result, message)
-  def fail(message: String): ServerResult = Result.fail(message)
+  def success(result: Option[ReadableServer], message: Option[String]): ServerResult = new ServerResult(
+    true,
+    result,
+    message
+  )
+  def fail(message: String): ServerResult = new ServerResult(
+    false,
+    None,
+    Some(message)
+  )
 }
 
 case class ServerUsersResult(success: Boolean, result: Map[ReadableUser, Role.Value])

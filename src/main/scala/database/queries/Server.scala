@@ -15,9 +15,10 @@ object Server {
   def getServerByName: String = "SELECT id, name, address FROM servers WHERE name = ?"
   def getServerByAddress: String = "SELECT id, name, address FROM servers WHERE address = ?"
 
-  def getServerUsers: String = "SELECT users.id, username, users.status, status.content FROM users " +
+  def getServerUsers: String = "SELECT users.id, username, users.status, status.content, roles.name FROM users " +
     "JOIN server_users ON server_users.user = users.id " +
     "JOIN statuses ON users.status = statuses.id " +
+    "JOIN roles ON users.role = roles.id " +
     "WHERE server_users.server = ?"
 
   def getServerMessages: String = "SELECT messages.id, content, " +

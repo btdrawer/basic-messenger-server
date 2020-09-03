@@ -2,9 +2,9 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{ReadableServer, ReadableUser, CreatableUser, ReadableServer, UpdatableUser, UserResult}
+import api.model.{ReadableServer, ReadableUser, CreatableUser, UpdatableUser, UserResult}
 import database.queries.{User => UserQueries}
-import model.{Role, Status, User}
+import model.{Role, Status}
 
 object User {
  private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {

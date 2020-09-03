@@ -31,7 +31,14 @@ case class UserResult(
 ) extends Result[ReadableUser](success, result, message)
 
 object UserResult {
-  def success(result: Option[ReadableUser], message: Option[String]): UserResult =
-    Result.success(result, message)
-  def fail(message: String): UserResult = Result.fail(message)
+  def success(result: Option[ReadableUser], message: Option[String]): UserResult = new UserResult(
+    true,
+    result,
+    message
+  )
+  def fail(message: String): UserResult = new UserResult(
+    false,
+    None,
+    Some(message)
+  )
 }

@@ -2,7 +2,7 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{CreatableServer, ReadableServer, ReadableUser, ServerResult}
+import api.model.{CreatableServer, ReadableMessage, ReadableServer, ReadableUser, ServerResult}
 import database.queries.{Server => ServerQueries}
 import model.{Message, Role, Status}
 
@@ -102,7 +102,7 @@ object Server {
 
     val userMap = Map[ReadableUser, Role.Value]()
     while(resultSet.next()) {
-      userMap + ReadableUser(
+      userMap + (ReadableUser(
         id = resultSet.getString(1),
         username = resultSet.getString(2),
         servers = None,
@@ -110,7 +110,7 @@ object Server {
           resultSet.getString(3),
           resultSet.getString(4)
         )
-      )
+      ) -> resultSet.getString(5))
     }
     userMap
   }

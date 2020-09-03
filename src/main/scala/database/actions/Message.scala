@@ -2,7 +2,7 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.ReadableObjectConverters._
+import api.converters.ReadableObjectConverters._
 import api.model.{MessageResult, ReadableMessage}
 import model.Message
 import database.queries.{Message => MessageQueries}
@@ -25,7 +25,7 @@ object Message {
           id = resultSet.getString(1),
           content = message.content,
           sender = message.sender.toReadable,
-          server = message.server.toReadable,
+          server = Some(message.server.toReadable),
           createdAt = message.createdAt
         )
       ),
