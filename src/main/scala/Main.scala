@@ -4,8 +4,8 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.Http
-import api.routes.{Main => GetRoutes}
-import database.Connection
+import routes.{Main => GetRoutes}
+import database.{Connection => GetConnection}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
@@ -28,7 +28,7 @@ object Main {
     val host = args(0)
     val port = args(1)
 
-    implicit val connection: Connection = Connection(
+    implicit val connection: Connection = GetConnection(
       host = args(2),
       username = args(3),
       password = args(4)

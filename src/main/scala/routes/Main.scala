@@ -1,4 +1,4 @@
-package api.routes
+package routes
 
 import java.sql.Connection
 

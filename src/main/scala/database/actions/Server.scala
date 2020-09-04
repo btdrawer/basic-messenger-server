@@ -2,9 +2,10 @@ package database.actions
 
 import java.sql.Connection
 
-import api.model.{CreatableServer, ReadableMessage, ReadableServer, ReadableUser, ServerResult}
+import model.result.ServerResult
 import database.queries.{Server => ServerQueries}
-import model.{Message, Role, Status}
+import model.Status
+import model.resources.{Message, Role, Status}
 
 object Server {
   def createServer(server: CreatableServer)(implicit connection: Connection): ServerResult = {
@@ -38,27 +39,28 @@ object Server {
   }
 
   private def findServers(query: String, template: String)(implicit connection: Connection):
-    List[ReadableServer] = {
+    List[BasicReadableServer] = {
     val statement = connection.prepareStatement(query)
     statement.setString(1, template)
     val resultSet = statement.executeQuery()
-    val servers = List[ReadableServer]()
+    val servers = List[BasicReadableServer]()
+
     while (resultSet.next()) {
-      servers.+:(ReadableServer(
-        id = resultSet.getString(1),
-        name = resultSet.getString(2),
-        address = resultSet.getString(3),
-        users = None,
-        messages = None
-      ))
+      servers.+:(
+        BasicReadableServer(
+          id = resultSet.getString(1),
+          name = resultSet.getString(2),
+          address = resultSet.getString(3)
+        )
+      )
     }
     servers
   }
 
-  def findServersByName(name: String)(implicit connection: Connection): List[ReadableServer] =
+  def findServersByName(name: String)(implicit connection: Connection): List[BasicReadableServer] =
     findServers(name, ServerQueries.findServersByName)
 
-  def findServersByAddress(address: String)(implicit connection: Connection): List[ReadableServer] =
+  def findServersByAddress(address: String)(implicit connection: Connection): List[BasicReadableServer] =
     findServers(address, ServerQueries.findServersByAddress)
 
   private def getServer(query: String, template: String)(implicit connection: Connection): ServerResult = {
@@ -72,7 +74,7 @@ object Server {
       val users = getServerUsers(id)
       ServerResult.success(
         result = Some(
-          ReadableServer(
+          old_model.ReadableServer(
             id = id,
             name = resultSet.getString(2),
             address = resultSet.getString(3),
@@ -94,22 +96,18 @@ object Server {
   def getServerByAddress(address: String)(implicit connection: Connection): ServerResult =
     getServer(address, ServerQueries.getServerByAddress)
 
-  private def getServerUsers(id: String)(implicit connection: Connection): Map[ReadableUser, Role.Value] = {
+  private def getServerUsers(id: String)(implicit connection: Connection): Map[BasicReadableUser, Role.Value] = {
     val statement = connection.prepareStatement(ServerQueries.getServerUsers)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[ReadableUser, Role.Value]()
+    val userMap = Map[BasicReadableUser, Role.Value]()
     while(resultSet.next()) {
-      userMap + (ReadableUser(
+      userMap + (BasicReadableUser(
         id = resultSet.getString(1),
         username = resultSet.getString(2),
-        servers = None,
-        status = Status(
-          resultSet.getString(3),
-          resultSet.getString(4)
-        )
+        status = Status.withName(resultSet.getString(3))
       ) -> resultSet.getString(5))
     }
     userMap
@@ -130,14 +128,10 @@ object Server {
           id = resultSet.getString(1),
           content = resultSet.getString(2),
           server = None,
-          sender = ReadableUser(
+          sender = BasicReadableUser(
             id = resultSet.getString(3),
             username = resultSet.getString(4),
-            servers = None,
-            status = Status(
-              id = resultSet.getString(5),
-              content = resultSet.getString(6)
-            )
+            status = Status.withName(resultSet.getString(5))
           ),
           createdAt = resultSet.getDate(7).toInstant
         )

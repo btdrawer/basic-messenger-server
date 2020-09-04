@@ -1,13 +1,14 @@
-package api.routes
+package routes
 
 import java.sql.Connection
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import api.model.{CreatableUser, UserResult}
 import database.actions.{User => UserActions}
-import api.converters.JsonConverters._
+import model.converters.JsonConverters._
+import model.result.UserResult
+import old_model.CreatableUser
 
 import scala.concurrent.Future
 

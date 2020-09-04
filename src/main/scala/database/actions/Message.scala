@@ -2,10 +2,9 @@ package database.actions
 
 import java.sql.Connection
 
-import api.converters.ReadableObjectConverters._
-import api.model.{MessageResult, ReadableMessage}
-import model.Message
+import model.resources.MessageResult
 import database.queries.{Message => MessageQueries}
+import model.resources.Message
 
 object Message {
   def createMessage(message: Message)(implicit connection: Connection): MessageResult = {
