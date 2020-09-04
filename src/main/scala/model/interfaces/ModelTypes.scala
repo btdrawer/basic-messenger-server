@@ -1,6 +1,6 @@
 package model.interfaces
 
-abstract class Result[T <: RootReadable](
+class Result[T <: RootReadable](
   success: Boolean,
   result: Option[T],
   message: Option[String]

@@ -49,19 +49,11 @@ object ReadableConverters {
       id = server.id,
       name = server.name,
       address = server.address,
-      users = Some(
-        server.users.flatMap(
-          _.map(
-            user => (user._1.toChildReadable, user._2)
-          )
-        ).toMap
+      users = server.users.map(
+          user => (user._1.toChildReadable, user._2)
       ),
-      messages = Some(
-        server.messages.flatMap(
-          _.map(
-            _.toChildReadable
-          )
-        ).toList
+      messages = server.messages.map(
+        _.toChildReadable
       )
     )
   }
@@ -70,12 +62,8 @@ object ReadableConverters {
     override def convert(user: User): RootReadableUser = RootReadableUser(
       id = user.id,
       username = user.username,
-      servers = Some(
-        user.servers.flatMap(
-          _.map(
-            server => (server._1.toChildReadable, server._2)
-          )
-        ).toMap
+      servers = user.servers.map(
+        server => (server._1.toChildReadable, server._2)
       ),
       status = user.status
     )
@@ -85,9 +73,7 @@ object ReadableConverters {
     override def convert(message: Message): RootReadableMessage = RootReadableMessage(
       id = message.id,
       content = message.content,
-      server = message.server.flatMap(
-        s => Some(s.toChildReadable)
-      ),
+      server = message.server.toChildReadable,
       sender = message.sender.toChildReadable,
       createdAt = message.createdAt
     )

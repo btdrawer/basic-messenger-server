@@ -1,15 +1,14 @@
 package model.resources
 
-import model.Creatable
 import model.interfaces.{ChildReadable, Creatable, Result, RootReadable}
 
 case class User(
   id: String,
   username: String,
-  password: Option[String],
-  servers: Option[Map[Server, Role.Value]],
+  password: String,
+  servers: Map[Server, Role.Value],
   status: Status.Value,
-  passwordReset: Option[PasswordReset]
+  passwordReset: PasswordReset
 )
 
 object Status extends Enumeration {
@@ -28,17 +27,17 @@ case class UserResult(
 ) extends Result[RootReadableUser](success, result, message)
 
 case class RootReadableUser(
-  override val id: String,
-  override val username: String,
-  override val servers: Option[Map[ChildReadableServer, Role.Value]],
-  override val status: Status.Value
-) extends User(id, username, None, servers, status, None) with RootReadable
+  id: String,
+  username: String,
+  servers: Map[ChildReadableServer, Role.Value],
+  status: Status.Value
+) extends RootReadable
 
 case class ChildReadableUser(
-  override val id: String,
-  override val username: String,
-  override val status: Status.Value
-) extends User(id, username, None, None, status, None) with ChildReadable
+  id: String,
+  username: String,
+  status: Status.Value
+) extends ChildReadable
 
 case class CreatableUser(
   username: String,

@@ -7,7 +7,7 @@ import model.interfaces.{ChildReadable, Creatable, Result, RootReadable}
 case class Message(
   id: String,
   content: String,
-  server: Option[Server],
+  server: Server,
   sender: User,
   createdAt: Instant
 )
@@ -19,18 +19,18 @@ case class MessageResult(
 ) extends Result[RootReadableMessage](success, result, message)
 
 case class RootReadableMessage(
-  override val id: String,
-  override val content: String,
-  override val server: Option[ChildReadableServer],
-  override val sender: ChildReadableUser,
-  override val createdAt: Instant
-) extends Message(id, content, server, sender, createdAt) with RootReadable
+  id: String,
+  content: String,
+  server: ChildReadableServer,
+  sender: ChildReadableUser,
+  createdAt: Instant
+) extends RootReadable
 
 case class ChildReadableMessage(
-  override val id: String,
-  override val content: String,
-  override val sender: ChildReadableUser,
-  override val createdAt: Instant
-) extends Message(id, content, None, sender, createdAt) with ChildReadable
+  id: String,
+  content: String,
+  sender: ChildReadableUser,
+  createdAt: Instant
+) extends ChildReadable
 
 case class CreatableMessage(content: String, sender: String) extends Creatable
