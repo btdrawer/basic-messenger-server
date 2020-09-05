@@ -5,10 +5,8 @@ import java.sql.Connection
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import database.actions.{User => UserActions}
-import model.converters.JsonConverters._
-import model.results.UserResult
-import old_model.CreatableUser
+
+import model._
 
 import scala.concurrent.Future
 
@@ -17,7 +15,7 @@ object User {
     concat(
       post {
         entity(as[CreatableUser]) { user =>
-          val result: Future[UserResult] = Future(UserActions.createUser(user))
+          val result: Future[Result[RootUser]] = Future(UserActions.createUser(user))
           onSuccess(result) { r =>
             complete(r)
           }

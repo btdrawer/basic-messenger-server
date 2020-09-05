@@ -1,40 +1,39 @@
 package model.converters
 
-import model.interfaces.ChildReadable
-import model.resources._
+import model._
 
 object ReadableConverters {
-  trait ReadableObjectConverter[A, B] {
+  sealed trait ReadableObjectConverter[A, B] {
     def convert(value: A): B
   }
 
   implicit class ToReadable[A](value: A) {
-    def toRootReadable[B <: RootReadable](implicit converter: ReadableObjectConverter[A, B]): B =
+    def toRootReadable[B <: RootElement](implicit converter: ReadableObjectConverter[A, B]): B =
       converter convert value
-    def toChildReadable[C <: ChildReadable](implicit converter: ReadableObjectConverter[A, C]): C =
+    def toChildReadable[C <: ChildElement](implicit converter: ReadableObjectConverter[A, C]): C =
       converter convert value
   }
 
   // ChildReadable converters
 
-  implicit object ChildServerConverter extends ReadableObjectConverter[Server, ChildReadableServer] {
-    override def convert(server: Server): ChildReadableServer = ChildReadableServer(
+  implicit object ChildServerConverter extends ReadableObjectConverter[Server, ChildServer] {
+    override def convert(server: Server): ChildServer = ChildServer(
       id = server.id,
       name = server.name,
       address = server.address
     )
   }
 
-  implicit object ChildUserConverter extends ReadableObjectConverter[User, ChildReadableUser] {
-    override def convert(user: User): ChildReadableUser = ChildReadableUser(
+  implicit object ChildUserConverter extends ReadableObjectConverter[User, ChildUser] {
+    override def convert(user: User): ChildUser = ChildUser(
       id = user.id,
       username = user.username,
       status = user.status
     )
   }
 
-  implicit object ChildMessageConverter extends ReadableObjectConverter[Message, ChildReadableMessage] {
-    override def convert(message: Message): ChildReadableMessage = ChildReadableMessage(
+  implicit object ChildMessageConverter extends ReadableObjectConverter[Message, ChildMessage] {
+    override def convert(message: Message): ChildMessage = ChildMessage(
       id = message.id,
       content = message.content,
       sender = message.sender.toChildReadable,
@@ -44,8 +43,8 @@ object ReadableConverters {
 
   // RootReadable converters
 
-  implicit object RootServerConverter extends ReadableObjectConverter[Server, RootReadableServer] {
-    override def convert(server: Server): RootReadableServer = RootReadableServer(
+  implicit object RootServerConverter extends ReadableObjectConverter[Server, RootServer] {
+    override def convert(server: Server): RootServer = RootServer(
       id = server.id,
       name = server.name,
       address = server.address,
@@ -58,8 +57,8 @@ object ReadableConverters {
     )
   }
 
-  implicit object RootUserConverter extends ReadableObjectConverter[User, RootReadableUser] {
-    override def convert(user: User): RootReadableUser = RootReadableUser(
+  implicit object RootUserConverter extends ReadableObjectConverter[User, RootUser] {
+    override def convert(user: User): RootUser = RootUser(
       id = user.id,
       username = user.username,
       servers = user.servers.map(
@@ -69,8 +68,8 @@ object ReadableConverters {
     )
   }
 
-  implicit object RootMessageConverter extends ReadableObjectConverter[Message, RootReadableMessage] {
-    override def convert(message: Message): RootReadableMessage = RootReadableMessage(
+  implicit object RootMessageConverter extends ReadableObjectConverter[Message, RootMessage] {
+    override def convert(message: Message): RootMessage = RootMessage(
       id = message.id,
       content = message.content,
       server = message.server.toChildReadable,

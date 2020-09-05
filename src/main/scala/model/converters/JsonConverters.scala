@@ -4,7 +4,7 @@ import java.time.Instant
 
 import model.resources.Status.Status
 import model.resources._
-import model.results._
+import model.result._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
