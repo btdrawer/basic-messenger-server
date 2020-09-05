@@ -5,7 +5,7 @@ import java.sql.Connection
 import model._
 import database.queries.{Message => MessageQueries}
 import model.{Failure, Result, RootMessage, Success}
-import model.converters.ReadableConverters.ToReadable
+import converters.ElementConverters.ToReadable
 
 object Message {
   def createMessage(message: Message)(implicit connection: Connection): Result[RootMessage] = {

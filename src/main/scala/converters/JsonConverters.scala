@@ -1,12 +1,11 @@
-package model.converters
+package converters
 
 import java.time.Instant
 
-import model.resources.Status.Status
-import model.resources._
-import model.result._
+import model.Status.Status
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import model._
 
 /*
   EnumJsonConverter class
@@ -43,25 +42,20 @@ object JsonConverters {
   implicit val passwordResetFormat: RootJsonFormat[PasswordReset] = jsonFormat2(PasswordReset)
 
   implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat2(CreatableMessage)
-  implicit val rootReadableMessageFormat: RootJsonFormat[RootReadableMessage] = jsonFormat5(RootReadableMessage)
-  implicit val childReadableMessageFormat: RootJsonFormat[ChildReadableMessage] = jsonFormat4(ChildReadableMessage)
+  implicit val rootReadableMessageFormat: RootJsonFormat[RootMessage] = jsonFormat5(RootMessage)
+  implicit val childReadableMessageFormat: RootJsonFormat[ChildMessage] = jsonFormat4(ChildMessage)
 
   implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat3(CreatableServer)
-  implicit val rootReadableServerFormat: RootJsonFormat[RootReadableServer] = jsonFormat5(RootReadableServer)
-  implicit val childReadableServerFormat: RootJsonFormat[ChildReadableServer] = jsonFormat3(ChildReadableServer)
+  implicit val rootReadableServerFormat: RootJsonFormat[RootServer] = jsonFormat5(RootServer)
+  implicit val childReadableServerFormat: RootJsonFormat[ChildServer] = jsonFormat3(ChildServer)
 
   implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat4(CreatableUser)
-  implicit val rootReadableUserFormat: RootJsonFormat[RootReadableUser] = jsonFormat4(RootReadableUser)
-  implicit val childReadableUserFormat: RootJsonFormat[ChildReadableUser] = jsonFormat3(ChildReadableUser)
+  implicit val rootReadableUserFormat: RootJsonFormat[RootUser] = jsonFormat4(RootUser)
+  implicit val childReadableUserFormat: RootJsonFormat[ChildUser] = jsonFormat3(ChildUser)
 
   // Results
 
-  implicit val messageSuccessFormat: RootJsonFormat[MessageSuccess] = jsonFormat2(MessageSuccess)
-  implicit val messageFailureFormat: RootJsonFormat[MessageFailure] = jsonFormat1(MessageFailure)
-
-  implicit val serverSuccessFormat: RootJsonFormat[ServerSuccess] = jsonFormat2(ServerSuccess)
-  implicit val serverFailureFormat: RootJsonFormat[ServerFailure] = jsonFormat1(ServerFailure)
-
-  implicit val userSuccessFormat: RootJsonFormat[UserSuccess] = jsonFormat2(UserSuccess)
-  implicit val userFailureFormat: RootJsonFormat[UserFailure] = jsonFormat1(UserFailure)
+  implicit val messageResultFormat: RootJsonFormat[Result[RootMessage]] = jsonFormat3(Result[RootMessage])
+  implicit val serverResultFormat: RootJsonFormat[Result[RootServer]] = jsonFormat3(Result[RootServer])
+  implicit val userResultFormat: RootJsonFormat[Result[RootUser]] = jsonFormat3(Result[RootUser])
 }

@@ -1,8 +1,8 @@
-package model.converters
+package converters
 
 import model._
 
-object ReadableConverters {
+object ElementConverters {
   sealed trait ReadableObjectConverter[A, B] {
     def convert(value: A): B
   }
