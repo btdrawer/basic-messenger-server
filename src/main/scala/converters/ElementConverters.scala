@@ -14,7 +14,7 @@ object ElementConverters {
       converter convert value
   }
 
-  // ChildReadable converters
+  // ChildElement converters
 
   implicit object ChildServerConverter extends ReadableObjectConverter[Server, ChildServer] {
     override def convert(server: Server): ChildServer = ChildServer(
@@ -41,7 +41,7 @@ object ElementConverters {
     )
   }
 
-  // RootReadable converters
+  // RootElement converters
 
   implicit object RootServerConverter extends ReadableObjectConverter[Server, RootServer] {
     override def convert(server: Server): RootServer = RootServer(

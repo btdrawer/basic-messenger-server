@@ -7,17 +7,22 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 
 import model._
+import database.actions.{User => UserActions}
+import converters.JsonConverters
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object User {
-  def apply()(implicit connection: Connection): Route = path("users") {
+object User extends JsonConverters {
+  def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = path("users") {
     concat(
       post {
-        entity(as[CreatableUser]) { user =>
-          val result: Future[Result[RootUser]] = Future(UserActions.createUser(user))
-          onSuccess(result) { r =>
-            complete(r)
+        decodeRequest {
+          entity(as[CreatableUser]) { user =>
+            println(user)
+            complete {
+              val result: Future[Result[RootUser]] = Future(UserActions.createUser(user))
+              result
+            }
           }
         }
       },

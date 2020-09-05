@@ -3,8 +3,8 @@ package database.actions
 import java.sql.Connection
 
 import model._
-import database.queries.{User => UserQueries}
 import model.{Failure, Result, Success}
+import database.queries.{User => UserQueries}
 
 object User {
  private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
@@ -34,11 +34,10 @@ object User {
       val createStatement = connection.prepareStatement(UserQueries.createUser)
       createStatement.setString(1, user.username)
       createStatement.setString(2, user.password)
-      createStatement.setString(3, user.status.toString)
       createStatement.executeUpdate()
 
       val passwordResetStatement = connection.prepareStatement(UserQueries.createPasswordResetData)
-      passwordResetStatement.setString(1, user.passwordReset.question.id)
+      passwordResetStatement.setString(1, user.passwordReset.question)
       passwordResetStatement.setString(2, user.passwordReset.answer)
       passwordResetStatement.executeUpdate()
 
@@ -53,7 +52,7 @@ object User {
             id = resultSet.getString(1),
             username = user.username,
             servers = Map[ChildServer, Role.Value](),
-            status = user.status
+            status = ???
           )
         ),
         message = Some("User successfully created.")

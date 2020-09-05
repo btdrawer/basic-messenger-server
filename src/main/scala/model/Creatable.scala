@@ -11,8 +11,12 @@ case class CreatableServer(
 case class CreatableUser(
   username: String,
   password: String,
-  status: Status.Value,
-  passwordReset: PasswordReset
+  passwordReset: CreatablePasswordReset
+) extends Creatable
+
+case class CreatablePasswordReset(
+  question: String,
+  answer: String
 ) extends Creatable
 
 case class CreatableMessage(

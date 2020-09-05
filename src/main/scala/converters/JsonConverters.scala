@@ -2,9 +2,10 @@ package converters
 
 import java.time.Instant
 
-import model.Status.Status
-import spray.json.DefaultJsonProtocol._
 import spray.json._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+
+import model.Status.Status
 import model._
 
 /*
@@ -25,12 +26,12 @@ class InstantJsonConverter extends RootJsonFormat[Instant] {
   override def write(v: Instant): JsValue = JsNumber(v.toEpochMilli)
 
   override def read(json: JsValue): Instant = json match {
-    case JsNumber(v) => new Instant(v.toLongExact)
+    case JsNumber(v) => Instant.ofEpochMilli(v.toLongExact)
     case _ => throw DeserializationException("Serialization failed")
   }
 }
 
-object JsonConverters {
+trait JsonConverters extends SprayJsonSupport with DefaultJsonProtocol {
   // Resources
 
   implicit val instantFormat: RootJsonFormat[Instant] = new InstantJsonConverter
@@ -49,7 +50,9 @@ object JsonConverters {
   implicit val rootReadableServerFormat: RootJsonFormat[RootServer] = jsonFormat5(RootServer)
   implicit val childReadableServerFormat: RootJsonFormat[ChildServer] = jsonFormat3(ChildServer)
 
-  implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat4(CreatableUser)
+  implicit val creatablePasswordResetFormat: RootJsonFormat[CreatablePasswordReset] =
+    jsonFormat2(CreatablePasswordReset)
+  implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat3(CreatableUser)
   implicit val rootReadableUserFormat: RootJsonFormat[RootUser] = jsonFormat4(RootUser)
   implicit val childReadableUserFormat: RootJsonFormat[ChildUser] = jsonFormat3(ChildUser)
 
