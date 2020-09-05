@@ -1,7 +1,5 @@
 package model.resources
 
-import model.interfaces.{ChildReadable, Creatable, Result, RootReadable}
-
 case class Server(
   id: String,
   name: String,
@@ -14,15 +12,6 @@ object Role extends Enumeration {
   type Role = Value
   val Admin, Moderator, Member = Value
 }
-
-case class ServerResult(
-  success: Boolean,
-  result: Option[RootReadableServer],
-  message: Option[String]
-) extends Result[RootReadableServer](success, result, message)
-
-case class ServerUsersResult(success: Boolean, result: Map[ChildReadableUser, Role.Value])
-  extends Result[Map[ChildReadableUser, Role.Value]](success, Some(result), None)
 
 case class RootReadableServer(
   id: String,

@@ -1,6 +1,6 @@
 package model.converters
 
-import model.interfaces.{ChildReadable, RootReadable}
+import model.interfaces.ChildReadable
 import model.resources._
 
 object ReadableConverters {

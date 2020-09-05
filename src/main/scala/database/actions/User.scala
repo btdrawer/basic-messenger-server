@@ -21,7 +21,7 @@ object User {
       password.matches(".*[a-z].*") &&
       password.matches(".*[A-Z].*")
 
-  def createUser(user: CreatableUser)(implicit connection: Connection): model.result.UserResult = {
+  def createUser(user: CreatableUser)(implicit connection: Connection): model.results.UserResult = {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
@@ -82,7 +82,7 @@ object User {
     serverMap
   }
 
-  def getUser(id: String)(implicit connection: Connection): model.result.UserResult = {
+  def getUser(id: String)(implicit connection: Connection): model.results.UserResult = {
     val statement = connection.prepareStatement(UserQueries.getUser)
     statement.setString(1, id)
     val resultSet = statement.executeQuery()
@@ -104,9 +104,9 @@ object User {
     }
   }
 
-  def updateUser(user: UpdatableUser)(implicit connection: Connection): model.result.UserResult = ???
+  def updateUser(user: UpdatableUser)(implicit connection: Connection): model.results.UserResult = ???
 
-  def updateUsername(id: String, username: String)(implicit connection: Connection): model.result.UserResult = {
+  def updateUsername(id: String, username: String)(implicit connection: Connection): model.results.UserResult = {
     val usernameExists = checkUsernameExists(username)
     if (usernameExists) result.UserResult.fail("A user with that username already exists.")
     else {
@@ -121,7 +121,7 @@ object User {
     }
   }
 
-  def updateStatus(id: String, status: Status.Value)(implicit connection: Connection): model.result.UserResult = {
+  def updateStatus(id: String, status: Status.Value)(implicit connection: Connection): model.results.UserResult = {
     val statement = connection.prepareStatement(UserQueries.updateUsername)
     statement.setString(1, status.toString)
     statement.setString(2, id)

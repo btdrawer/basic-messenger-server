@@ -4,6 +4,7 @@ import java.time.Instant
 
 import model.resources.Status.Status
 import model.resources._
+import model.results._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
@@ -31,6 +32,8 @@ class InstantJsonConverter extends RootJsonFormat[Instant] {
 }
 
 object JsonConverters {
+  // Resources
+
   implicit val instantFormat: RootJsonFormat[Instant] = new InstantJsonConverter
 
   implicit val roleFormat: EnumJsonConverter[Role.type] = new EnumJsonConverter[Role.type](Role)
@@ -39,18 +42,26 @@ object JsonConverters {
   implicit val passwordResetQuestionFormat: RootJsonFormat[PasswordResetQuestion] = jsonFormat2(PasswordResetQuestion)
   implicit val passwordResetFormat: RootJsonFormat[PasswordReset] = jsonFormat2(PasswordReset)
 
-  implicit val childReadableUserFormat: RootJsonFormat[ChildReadableUser] = jsonFormat3(ChildReadableUser)
-  implicit val childReadableServerFormat: RootJsonFormat[ChildReadableServer] = jsonFormat3(ChildReadableServer)
-
-  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat4(CreatableMessage)
+  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat2(CreatableMessage)
   implicit val rootReadableMessageFormat: RootJsonFormat[RootReadableMessage] = jsonFormat5(RootReadableMessage)
-  implicit val messageResultFormat: RootJsonFormat[MessageResult] = jsonFormat3(MessageResult.apply)
+  implicit val childReadableMessageFormat: RootJsonFormat[ChildReadableMessage] = jsonFormat4(ChildReadableMessage)
 
   implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat3(CreatableServer)
-  implicit val readableServerFormat: RootJsonFormat[RootReadableServer] = jsonFormat5(RootReadableServer)
-  implicit val serverResultFormat: RootJsonFormat[ServerResult] = jsonFormat3(ServerResult.apply)
+  implicit val rootReadableServerFormat: RootJsonFormat[RootReadableServer] = jsonFormat5(RootReadableServer)
+  implicit val childReadableServerFormat: RootJsonFormat[ChildReadableServer] = jsonFormat3(ChildReadableServer)
 
   implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat4(CreatableUser)
-  implicit val readableUserFormat: RootJsonFormat[RootReadableUser] = jsonFormat4(RootReadableUser)
-  implicit val userResultFormat: RootJsonFormat[UserResult] = jsonFormat3(UserResult.apply)
+  implicit val rootReadableUserFormat: RootJsonFormat[RootReadableUser] = jsonFormat4(RootReadableUser)
+  implicit val childReadableUserFormat: RootJsonFormat[ChildReadableUser] = jsonFormat3(ChildReadableUser)
+
+  // Results
+
+  implicit val messageSuccessFormat: RootJsonFormat[MessageSuccess] = jsonFormat2(MessageSuccess)
+  implicit val messageFailureFormat: RootJsonFormat[MessageFailure] = jsonFormat1(MessageFailure)
+
+  implicit val serverSuccessFormat: RootJsonFormat[ServerSuccess] = jsonFormat2(ServerSuccess)
+  implicit val serverFailureFormat: RootJsonFormat[ServerFailure] = jsonFormat1(ServerFailure)
+
+  implicit val userSuccessFormat: RootJsonFormat[UserSuccess] = jsonFormat2(UserSuccess)
+  implicit val userFailureFormat: RootJsonFormat[UserFailure] = jsonFormat1(UserFailure)
 }

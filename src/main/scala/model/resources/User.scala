@@ -1,7 +1,5 @@
 package model.resources
 
-import model.interfaces.{ChildReadable, Creatable, Result, RootReadable}
-
 case class User(
   id: String,
   username: String,
@@ -19,12 +17,6 @@ object Status extends Enumeration {
 case class PasswordReset(question: PasswordResetQuestion, answer: String)
 
 case class PasswordResetQuestion(id: String, content: String)
-
-case class UserResult(
-  success: Boolean,
-  result: Option[RootReadableUser],
-  message: Option[String]
-) extends Result[RootReadableUser](success, result, message)
 
 case class RootReadableUser(
   id: String,

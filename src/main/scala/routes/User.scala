@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import database.actions.{User => UserActions}
 import model.converters.JsonConverters._
-import model.result.UserResult
+import model.results.UserResult
 import old_model.CreatableUser
 
 import scala.concurrent.Future
