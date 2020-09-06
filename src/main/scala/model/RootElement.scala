@@ -4,6 +4,8 @@ import java.time.Instant
 
 sealed trait RootElement
 
+case class NoRootElement() extends RootElement
+
 case class RootServer(
   id: Int,
   name: String,

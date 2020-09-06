@@ -3,7 +3,7 @@ package database.actions
 import java.sql.{Connection, ResultSet}
 
 import model._
-import model.{Failure, Result, Success}
+import model.{Result, Success}
 import database.queries.{User => UserQueries}
 
 object User {

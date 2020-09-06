@@ -19,7 +19,7 @@ object Success {
 case class ApiException(message: FailureMessage) extends Exception
 
 object Failure {
-  def apply(message: String): Result[Nothing] = Result[Nothing](
+  def apply(message: String): Result[NoRootElement] = Result[NoRootElement](
     success = false,
     result = None,
     message = Some(message)

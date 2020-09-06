@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
 object Main extends Directives with JsonConverters {
   def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case ApiException(err) =>
-      complete(err.statusCode, Failure(err.message))
+      complete(err.statusCode -> Failure(err.message))
     case err =>
       err.printStackTrace()
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
