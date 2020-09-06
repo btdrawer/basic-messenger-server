@@ -1,6 +1,6 @@
 package database.actions
 
-import java.sql.Connection
+import java.sql.{Connection, ResultSet}
 
 import model._
 import model.{Failure, Result, Success}
@@ -8,10 +8,15 @@ import database.queries.{User => UserQueries}
 
 object User {
  private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
-    val statement = connection.prepareStatement(UserQueries.checkUsernameExists)
+    val statement = connection.prepareStatement(
+      UserQueries.checkUsernameExists,
+      ResultSet.TYPE_SCROLL_INSENSITIVE,
+      ResultSet.CONCUR_READ_ONLY
+    )
     statement.setString(1, username)
+
     val resultSet = statement.executeQuery()
-    resultSet.last()
+    resultSet.first()
     resultSet.getRow > 0
   }
 
@@ -31,28 +36,26 @@ object User {
         "at least one lowercase letter, uppercase letter, and number."
     )
     else {
-      val createStatement = connection.prepareStatement(UserQueries.createUser)
-      createStatement.setString(1, user.username)
-      createStatement.setString(2, user.password)
-      createStatement.executeUpdate()
+      val statement = connection.prepareStatement(
+        UserQueries.createUser,
+        ResultSet.TYPE_SCROLL_SENSITIVE,
+        ResultSet.CONCUR_READ_ONLY
+      )
+      statement.setString(1, user.username)
+      statement.setString(2, user.password)
+      statement.setInt(3, user.passwordReset.question)
+      statement.setString(4, user.passwordReset.answer)
 
-      val passwordResetStatement = connection.prepareStatement(UserQueries.createPasswordResetData)
-      passwordResetStatement.setString(1, user.passwordReset.question)
-      passwordResetStatement.setString(2, user.passwordReset.answer)
-      passwordResetStatement.executeUpdate()
-
-      val userIdStatement = connection.prepareStatement(UserQueries.getUserId)
-      userIdStatement.setString(1, user.username)
-      val resultSet = userIdStatement.executeQuery()
-      resultSet.last()
+      val resultSet = statement.executeQuery()
+      resultSet.first()
 
       Success(
         result = Some(
           RootUser(
-            id = resultSet.getString(1),
-            username = user.username,
-            servers = Map[ChildServer, Role.Value](),
-            status = ???
+            id = resultSet.getInt(1),
+            username = resultSet.getString(2),
+            servers = List[ChildUserServerRole](),
+            status = Status.withName(resultSet.getString(3))
           )
         ),
         message = Some("User successfully created.")
@@ -60,28 +63,32 @@ object User {
     }
   }
 
-  private def getUserServers(id: String)(implicit connection: Connection): Map[ChildServer, Role.Value] = {
+  private def getUserServers(id: Int)(implicit connection: Connection): List[ChildUserServerRole] = {
     val statement = connection.prepareStatement(UserQueries.getUserServers)
-    statement.setString(1, id)
+    statement.setInt(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val serverMap = Map[ChildServer, Role.Value]()
+    val serverRoleList = List[ChildUserServerRole]()
     while(resultSet.next()) {
-      serverMap + (
-        ChildServer(
-          id = resultSet.getString(1),
-          name = resultSet.getString(2),
-          address = resultSet.getString(3)
-        ) -> resultSet.getString(4)
+      serverRoleList.+:(
+        ChildUserServerRole(
+          server = ChildServer(
+            id = resultSet.getInt(1),
+            name = resultSet.getString(2),
+            address = resultSet.getString(3)
+          ),
+          role = Role.withName(resultSet.getString(4))
+        )
       )
     }
-    serverMap
+    serverRoleList
   }
 
-  def getUser(id: String)(implicit connection: Connection): Result[RootUser] = {
+  def getUser(id: Int)(implicit connection: Connection): Result[RootUser] = {
     val statement = connection.prepareStatement(UserQueries.getUser)
-    statement.setString(1, id)
+    statement.setInt(1, id)
+
     val resultSet = statement.executeQuery()
     resultSet.last()
 
@@ -104,13 +111,13 @@ object User {
 
   // def updateUser(user: UpdatableUser)(implicit connection: Connection): model.results.UserResult = ???
 
-  def updateUsername(id: String, username: String)(implicit connection: Connection): Result[RootUser] = {
+  def updateUsername(id: Int, username: String)(implicit connection: Connection): Result[RootUser] = {
     val usernameExists = checkUsernameExists(username)
     if (usernameExists) Failure("A user with that username already exists.")
     else {
       val statement = connection.prepareStatement(UserQueries.updateUsername)
       statement.setString(1, username)
-      statement.setString(2, id)
+      statement.setInt(2, id)
       statement.executeUpdate()
 
       Success(
@@ -120,10 +127,10 @@ object User {
     }
   }
 
-  def updateStatus(id: String, status: Status.Value)(implicit connection: Connection): Result[RootUser] = {
+  def updateStatus(id: Int, status: Status.Value)(implicit connection: Connection): Result[RootUser] = {
     val statement = connection.prepareStatement(UserQueries.updateUsername)
     statement.setString(1, status.toString)
-    statement.setString(2, id)
+    statement.setInt(2, id)
     statement.executeUpdate()
 
     Success(

@@ -5,7 +5,7 @@ sealed trait Creatable
 case class CreatableServer(
   name: String,
   address: String,
-  creator: String
+  creator: Int
 ) extends Creatable
 
 case class CreatableUser(
@@ -15,7 +15,7 @@ case class CreatableUser(
 ) extends Creatable
 
 case class CreatablePasswordReset(
-  question: String,
+  question: Int,
   answer: String
 ) extends Creatable
 

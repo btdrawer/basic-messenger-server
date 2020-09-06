@@ -11,8 +11,8 @@ object Message {
   def createMessage(message: Message)(implicit connection: Connection): Result[RootMessage] = {
     val statement = connection.prepareStatement(MessageQueries.createMessage)
     statement.setString(1, message.content)
-    statement.setString(2, message.sender.id)
-    statement.setString(3, message.server.id)
+    statement.setInt(2, message.sender.id)
+    statement.setInt(3, message.server.id)
     statement.setString(4, message.createdAt.toString)
 
     val resultSet = statement.executeQuery()
@@ -22,7 +22,7 @@ object Message {
     else Success(
       result = Some(
         RootMessage(
-          id = resultSet.getString(1),
+          id = resultSet.getInt(1),
           content = message.content,
           sender = message.sender.toChildReadable,
           server = message.server.toChildReadable,

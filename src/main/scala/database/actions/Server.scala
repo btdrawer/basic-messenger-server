@@ -17,16 +17,18 @@ object Server {
         val statement = connection.prepareStatement(ServerQueries.createServer)
         statement.setString(1, server.name)
         statement.setString(2, server.address)
-        statement.setString(3, server.creator)
+        statement.setInt(3, server.creator)
+
         val resultSet = statement.executeQuery()
+        resultSet.first()
 
         Success(
           result = Some(
             RootServer(
-              id = resultSet.getString(1),
+              id = resultSet.getInt(1),
               name = server.name,
               address = server.address,
-              users = Map[ChildUser, Role.Value](),
+              users = List[ChildServerUserRole](),
               messages = List[ChildMessage]()
             )
           ),
@@ -46,7 +48,7 @@ object Server {
     while (resultSet.next()) {
       servers.+:(
         ChildServer(
-          id = resultSet.getString(1),
+          id = resultSet.getInt(1),
           name = resultSet.getString(2),
           address = resultSet.getString(3)
         )
@@ -71,7 +73,7 @@ object Server {
 
     if (resultSet.getRow < 1) Failure("Server not found.")
     else {
-      val id = resultSet.getString(1)
+      val id = resultSet.getInt(1)
       val users = getServerUsers(id)
       val messages = getServerMessages(id, 100, 0)
 
@@ -90,8 +92,8 @@ object Server {
     }
   }
 
-  def getServerById(id: String)(implicit connection: Connection): Result[RootServer] =
-    getServer(id, ServerQueries.getServerById)
+  def getServerById(id: Int)(implicit connection: Connection): Result[RootServer] =
+    getServer(id.toString, ServerQueries.getServerById)
 
   def getServerByName(name: String)(implicit connection: Connection): Result[RootServer] =
     getServer(name, ServerQueries.getServerByName)
@@ -99,28 +101,32 @@ object Server {
   def getServerByAddress(address: String)(implicit connection: Connection): Result[RootServer] =
     getServer(address, ServerQueries.getServerByAddress)
 
-  private def getServerUsers(id: String)(implicit connection: Connection): Map[ChildUser, Role.Value] = {
+  private def getServerUsers(id: Int)(implicit connection: Connection): List[ChildServerUserRole] = {
     val statement = connection.prepareStatement(ServerQueries.getServerUsers)
-    statement.setString(1, id)
+    statement.setInt(1, id)
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    val userMap = Map[ChildUser, Role.Value]()
+    val userRoleList = List[ChildServerUserRole]()
     while(resultSet.next()) {
-      userMap + (
-        ChildUser(
-          id = resultSet.getString(1),
-          username = resultSet.getString(2),
-          status = Status.withName(resultSet.getString(3))
-        ) -> resultSet.getString(5))
+      userRoleList.+:(
+        ChildServerUserRole(
+          user = ChildUser(
+            id = resultSet.getInt(1),
+            username = resultSet.getString(2),
+            status = Status.withName(resultSet.getString(3))
+          ),
+          role = Role.withName(resultSet.getString(5))
+        )
+      )
     }
-    userMap
+    userRoleList
   }
 
-  def getServerMessages(id: String, limit: Int, offset: Int)(implicit connection: Connection):
+  def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection):
     List[ChildMessage] = {
     val statement = connection.prepareStatement(ServerQueries.getServerById)
-    statement.setString(1, id)
+    statement.setInt(1, id)
     statement.setInt(2, limit)
     statement.setInt(3, offset)
     val resultSet = statement.executeQuery()
@@ -130,10 +136,10 @@ object Server {
     while(resultSet.next()) {
       messages.+:(
         ChildMessage(
-          id = resultSet.getString(1),
+          id = resultSet.getInt(1),
           content = resultSet.getString(2),
           sender = ChildUser(
-            id = resultSet.getString(3),
+            id = resultSet.getInt(3),
             username = resultSet.getString(4),
             status = Status.withName(resultSet.getString(5))
           ),

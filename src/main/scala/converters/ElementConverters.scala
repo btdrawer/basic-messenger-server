@@ -49,7 +49,10 @@ object ElementConverters {
       name = server.name,
       address = server.address,
       users = server.users.map(
-          user => (user._1.toChildReadable, user._2)
+        user => ChildServerUserRole(
+          user = user.user.toChildReadable,
+          role = user.role
+        )
       ),
       messages = server.messages.map(
         _.toChildReadable
@@ -62,7 +65,10 @@ object ElementConverters {
       id = user.id,
       username = user.username,
       servers = user.servers.map(
-        server => (server._1.toChildReadable, server._2)
+        server => ChildUserServerRole(
+          server = server.server.toChildReadable,
+          role = server.role
+        )
       ),
       status = user.status
     )

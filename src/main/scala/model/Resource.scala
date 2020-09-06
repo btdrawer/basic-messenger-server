@@ -5,30 +5,42 @@ import java.time.Instant
 sealed trait Resource
 
 case class Server(
-  id: String,
+  id: Int,
   name: String,
   address: String,
-  users: Map[User, Role.Value],
+  users: List[ServerUserRole],
   messages: List[Message]
 ) extends Resource
 
+case class ServerUserRole(
+  user: User,
+  role: Role.Value
+) extends Resource
+
 object Role extends Enumeration {
-  type Role = Value
-  val Admin, Moderator, Member = Value
+  val ADMIN: Role.Value = Value("ADMIN")
+  val MODERATOR: Role.Value = Value("MODERATOR")
+  val MEMBER: Role.Value = Value("MEMBER")
 }
 
 case class User(
-  id: String,
+  id: Int,
   username: String,
   password: String,
-  servers: Map[Server, Role.Value],
+  servers: List[UserServerRole],
   status: Status.Value,
   passwordReset: PasswordReset
 ) extends Resource
 
+case class UserServerRole(
+  server: Server,
+  role: Role.Value
+) extends Resource
+
 object Status extends Enumeration {
-  type Status = Value
-  val Online, Busy, Offline = Status
+  val ONLINE: Status.Value = Value("ONLINE")
+  val BUSY: Status.Value = Value("BUSY")
+  val OFFLINE: Status.Value = Value("OFFLINE")
 }
 
 case class PasswordReset(
@@ -37,12 +49,12 @@ case class PasswordReset(
 ) extends Resource
 
 case class PasswordResetQuestion(
-  id: String,
+  id: Int,
   content: String
 ) extends Resource
 
 case class Message(
-  id: String,
+  id: Int,
   content: String,
   server: Server,
   sender: User,

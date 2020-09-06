@@ -2,7 +2,6 @@ package routes
 
 import java.sql.Connection
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 
@@ -11,6 +10,7 @@ import database.actions.{User => UserActions}
 import converters.JsonConverters
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure => UtilFailure, Success => UtilSuccess}
 
 object User extends JsonConverters {
   def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = path("users") {
@@ -18,20 +18,21 @@ object User extends JsonConverters {
       post {
         decodeRequest {
           entity(as[CreatableUser]) { user =>
-            println(user)
-            complete {
-              val result: Future[Result[RootUser]] = Future(UserActions.createUser(user))
-              result
+            val result: Future[Result[RootUser]] = Future(UserActions.createUser(user))
+            onComplete(result) {
+              case UtilSuccess(res) => complete(res)
+              case UtilFailure(err) => complete(err)
             }
           }
         }
       },
       get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
-      },
-      get {
         pathPrefix(LongNumber) { id =>
-          ???
+          val result: Future[Result[RootUser]] = Future(UserActions.getUser(id.toInt))
+          onComplete(result) {
+            case UtilSuccess(res) => complete(res)
+            case UtilFailure(err) => complete(err)
+          }
         }
       },
       put {

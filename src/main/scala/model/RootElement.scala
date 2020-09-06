@@ -5,22 +5,22 @@ import java.time.Instant
 sealed trait RootElement
 
 case class RootServer(
-  id: String,
+  id: Int,
   name: String,
   address: String,
-  users: Map[ChildUser, Role.Value],
+  users: List[ChildServerUserRole],
   messages: List[ChildMessage]
 ) extends RootElement
 
 case class RootUser(
-  id: String,
+  id: Int,
   username: String,
-  servers: Map[ChildServer, Role.Value],
+  servers: List[ChildUserServerRole],
   status: Status.Value
 ) extends RootElement
 
 case class RootMessage(
-  id: String,
+  id: Int,
   content: String,
   server: ChildServer,
   sender: ChildUser,
