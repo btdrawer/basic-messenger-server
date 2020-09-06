@@ -8,13 +8,13 @@ object User {
     "VALUES (?, ?, 'OFFLINE', ?, ?) " +
     "RETURNING id, username, status"
 
-  def getUser: String = "SELECT username, statuses.id AS statusId, statuses.content AS statusContent FROM users " +
+  def getUser: String = "SELECT username, statuses.id AS statusId FROM users " +
     "JOIN statuses ON users.status = statuses.id " +
     "WHERE users.id = ?"
   def getUserId: String = "SELECT id FROM user WHERE username = ?"
-  def getUserServers: String = "SELECT id, name, address, role FROM servers " +
-    "JOIN server_members ON servers.id = server_members.server " +
-    "WHERE server_members.user = ?"
+  def getUserServers: String = "SELECT servers.id AS id, name, address, role FROM servers " +
+    "JOIN server_users ON servers.id = server_users.server " +
+    "WHERE server_users.user = ?"
 
   def updateUsername: String = "UPDATE users SET username = ? WHERE id = ?"
   def updateStatus: String = "UPDATE users SET status = ? WHERE id = ?"

@@ -9,10 +9,10 @@ import model.{Failure, Result, Success}
 object Server {
   def createServer(server: CreatableServer)(implicit connection: Connection): Result[RootServer] = {
     val isNameTaken = getServerByName(server.name)
-    if (isNameTaken.success) Failure("That server name is already taken.")
+    if (isNameTaken.success) throw ApiException(FailureMessages.SERVER_NAME_TAKEN)
     else {
       val isAddressTaken = getServerByAddress(server.address)
-      if (isAddressTaken.success) Failure("That server address is already taken.")
+      if (isAddressTaken.success) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
       else {
         val statement = connection.prepareStatement(ServerQueries.createServer)
         statement.setString(1, server.name)
@@ -71,7 +71,7 @@ object Server {
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    if (resultSet.getRow < 1) Failure("Server not found.")
+    if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
       val id = resultSet.getInt(1)
       val users = getServerUsers(id)

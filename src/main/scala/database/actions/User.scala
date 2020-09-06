@@ -30,11 +30,8 @@ object User {
     val usernameExists = checkUsernameExists(user.username)
     val passwordIsValid = checkPasswordIsValid(user.password)
 
-    if (usernameExists) Failure("A user with that username already exists.")
-    else if (!passwordIsValid) Failure(
-      "Your password must be at least 8 characters and contain " +
-        "at least one lowercase letter, uppercase letter, and number."
-    )
+    if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
+    else if (!passwordIsValid) throw ApiException(FailureMessages.PASSWORD_INVALID)
     else {
       val statement = connection.prepareStatement(
         UserQueries.createUser,
@@ -64,10 +61,15 @@ object User {
   }
 
   private def getUserServers(id: Int)(implicit connection: Connection): List[ChildUserServerRole] = {
-    val statement = connection.prepareStatement(UserQueries.getUserServers)
+    val statement = connection.prepareStatement(
+      UserQueries.getUserServers,
+      ResultSet.TYPE_SCROLL_SENSITIVE,
+      ResultSet.CONCUR_READ_ONLY
+    )
     statement.setInt(1, id)
+
     val resultSet = statement.executeQuery()
-    resultSet.last()
+    resultSet.first()
 
     val serverRoleList = List[ChildUserServerRole]()
     while(resultSet.next()) {
@@ -86,13 +88,17 @@ object User {
   }
 
   def getUser(id: Int)(implicit connection: Connection): Result[RootUser] = {
-    val statement = connection.prepareStatement(UserQueries.getUser)
+    val statement = connection.prepareStatement(
+      UserQueries.getUser,
+      ResultSet.TYPE_SCROLL_SENSITIVE,
+      ResultSet.CONCUR_READ_ONLY
+    )
     statement.setInt(1, id)
 
     val resultSet = statement.executeQuery()
-    resultSet.last()
+    resultSet.first()
 
-    if (resultSet.getRow < 1) Failure("User not found.")
+    if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       val servers = getUserServers(id)
       Success(
@@ -113,7 +119,7 @@ object User {
 
   def updateUsername(id: Int, username: String)(implicit connection: Connection): Result[RootUser] = {
     val usernameExists = checkUsernameExists(username)
-    if (usernameExists) Failure("A user with that username already exists.")
+    if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
       val statement = connection.prepareStatement(UserQueries.updateUsername)
       statement.setString(1, username)

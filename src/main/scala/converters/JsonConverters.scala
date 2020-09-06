@@ -30,6 +30,12 @@ class InstantJsonConverter extends RootJsonFormat[Instant] {
   }
 }
 
+class NothingJsonConverter extends RootJsonFormat[Nothing] {
+  override def write(v: Nothing): JsValue = JsNull
+
+  override def read(json: JsValue): Nothing = new Nothing
+}
+
 trait JsonConverters extends SprayJsonSupport with DefaultJsonProtocol {
   // Resources
 
@@ -37,6 +43,8 @@ trait JsonConverters extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val roleFormat: EnumJsonConverter[Role.type] = new EnumJsonConverter[Role.type](Role)
   implicit val statusFormat: EnumJsonConverter[Status.type] = new EnumJsonConverter[Status.type](Status)
+  implicit val failureMessageFormat: EnumJsonConverter[FailureMessage.type] =
+    new EnumJsonConverter[FailureMessage.type](FailureMessage)
 
   implicit val passwordResetQuestionFormat: RootJsonFormat[PasswordResetQuestion] =
     jsonFormat2(PasswordResetQuestion)
@@ -64,4 +72,7 @@ trait JsonConverters extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val messageResultFormat: RootJsonFormat[Result[RootMessage]] = jsonFormat3(Result[RootMessage])
   implicit val serverResultFormat: RootJsonFormat[Result[RootServer]] = jsonFormat3(Result[RootServer])
   implicit val userResultFormat: RootJsonFormat[Result[RootUser]] = jsonFormat3(Result[RootUser])
+
+  implicit val nothingFormat: NothingJsonConverter = new NothingJsonConverter
+  implicit val failureResultFormat: RootJsonFormat[Result[Nothing]] = jsonFormat3(Result[Nothing])
 }

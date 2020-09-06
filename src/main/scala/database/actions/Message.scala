@@ -18,7 +18,7 @@ object Message {
     val resultSet = statement.executeQuery()
     resultSet.last()
 
-    if (resultSet.getRow <= 0) Failure("An error occurred.")
+    if (resultSet.getRow <= 0) throw ApiException(FailureMessages.GENERIC)
     else Success(
       result = Some(
         RootMessage(
