@@ -5,7 +5,7 @@ import java.sql.Connection
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
 
-import converters.JsonConverters
+import model.converters.JsonConverters
 import model.{ApiException, Failure}
 
 import scala.concurrent.ExecutionContext

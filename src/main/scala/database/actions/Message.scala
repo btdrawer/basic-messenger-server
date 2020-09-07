@@ -3,21 +3,22 @@ package database.actions
 import java.sql.Connection
 
 import model._
+import model.converters.ElementConverters.ToReadable
+import database.RunQuery
 import database.queries.{Message => MessageQueries}
-import model.{Failure, Result, RootMessage, Success}
-import converters.ElementConverters.ToReadable
 
 object Message {
   def createMessage(message: Message)(implicit connection: Connection): Result[RootMessage] = {
-    val statement = connection.prepareStatement(MessageQueries.createMessage)
-    statement.setString(1, message.content)
-    statement.setInt(2, message.sender.id)
-    statement.setInt(3, message.server.id)
-    statement.setString(4, message.createdAt.toString)
-
-    val resultSet = statement.executeQuery()
-    resultSet.last()
-
+    val resultSet = RunQuery(
+      MessageQueries.createMessage,
+      List(
+        message.content,
+        message.sender.id,
+        message.server.id,
+        message.createdAt.toString
+      )
+    )
+    resultSet.first()
     if (resultSet.getRow <= 0) throw ApiException(FailureMessages.GENERIC)
     else Success(
       result = Some(

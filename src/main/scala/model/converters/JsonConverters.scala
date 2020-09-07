@@ -1,4 +1,4 @@
-package converters
+package model.converters
 
 import java.time.Instant
 

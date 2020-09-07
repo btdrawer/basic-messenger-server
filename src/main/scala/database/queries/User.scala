@@ -16,6 +16,9 @@ object User {
     "JOIN server_users ON servers.id = server_users.server " +
     "WHERE server_users.user = ?"
 
-  def updateUsername: String = "UPDATE users SET username = ? WHERE id = ?"
+  def updateUsername: String = "UPDATE users SET username = ? WHERE id = ?" +
+    "RETURNING id, username, status"
   def updateStatus: String = "UPDATE users SET status = ? WHERE id = ?"
+
+  def deleteUser: String = "DELETE FROM users WHERE id = ?"
 }

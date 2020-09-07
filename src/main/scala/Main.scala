@@ -6,7 +6,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 
 import routes.{Main => GetRoutes}
-import database.{Connection => GetConnection}
+import database.GetConnection
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn

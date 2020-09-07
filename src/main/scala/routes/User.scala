@@ -12,7 +12,6 @@ import converters.JsonConverters
 import scala.concurrent.{ExecutionContext, Future}
 
 object User extends JsonConverters {
-
    def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = pathPrefix("users") {
     concat(
       post {
