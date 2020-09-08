@@ -14,12 +14,6 @@ case class CreatableUser(
   passwordReset: CreatablePasswordReset
 ) extends Creatable
 
-case class CreatablePasswordReset(
-  question: Int,
-  answer: String
-) extends Creatable
+case class CreatablePasswordReset(question: Int, answer: String) extends Creatable
 
-case class CreatableMessage(
-  content: String,
-  sender: String
-) extends Creatable
+case class CreatableMessage(content: String, sender: String) extends Creatable

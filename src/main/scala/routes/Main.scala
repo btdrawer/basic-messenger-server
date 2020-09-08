@@ -4,9 +4,7 @@ import java.sql.Connection
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
-
-import model.converters.JsonConverters
-import model.{ApiException, Failure}
+import model.{ApiException, Failure, JsonConverters}
 
 import scala.concurrent.ExecutionContext
 
@@ -22,7 +20,7 @@ object Main extends Directives with JsonConverters {
   def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = {
     handleExceptions(exceptionHandler) {
       concat(
-        User()
+        UserRoutes()
       )
     }
   }

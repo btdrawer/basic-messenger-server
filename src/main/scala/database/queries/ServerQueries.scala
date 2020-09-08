@@ -1,6 +1,6 @@
 package database.queries
 
-object Server {
+object ServerQueries {
   def createServer: String = "INSERT INTO servers (name, address) VALUES (?, ?);\n" +
     "SET @id = SELECT SCOPE_IDENTITY()\n" +
     "INSERT INTO server_users (user, server, role) VALUES (?, @id, " +

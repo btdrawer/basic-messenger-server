@@ -4,10 +4,10 @@ import java.sql.Connection
 
 import model._
 import database.Query
-import database.queries.{Server => ServerQueries}
+import database.queries.ServerQueries
 
-object Server {
-  def createServer(server: CreatableServer)(implicit connection: Connection): Result[RootServer] = {
+object ServerActions {
+  def createServer(server: CreatableServer)(implicit connection: Connection): Result[Server] = {
     val isNameTaken = getServerByName(server.name)
     if (isNameTaken.success) throw ApiException(FailureMessages.SERVER_NAME_TAKEN)
     val isAddressTaken = getServerByAddress(server.address)
@@ -15,20 +15,16 @@ object Server {
     else {
       val resultSet = Query.run(
         ServerQueries.createServer,
-        List(
-          server.name,
-          server.address,
-          server.creator
-        )
+        List(server.name, server.address, server.creator)
       )
       resultSet.first()
       Success(
         result = Some(
-          RootServer(
+          Server(
             id = resultSet.getInt(1),
             name = server.name,
             address = server.address,
-            users = List[ChildServerUserRole](),
+            users = List[ServerUserRole](),
             messages = List[ChildMessage]()
           )
         ),
@@ -54,7 +50,7 @@ object Server {
   def findServersByAddress(address: String)(implicit connection: Connection): List[ChildServer] =
     findServers(address, ServerQueries.findServersByAddress)
 
-  private def getServer(query: String, template: String)(implicit connection: Connection): Result[RootServer] = {
+  private def getServer(query: String, template: String)(implicit connection: Connection): Result[Server] = {
     val resultSet = Query.run(query, List(template))
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
@@ -64,12 +60,12 @@ object Server {
       val messages = getServerMessages(id, 100, 0)
       Success(
         result = Some(
-          RootServer(
+          Server(
             id = id,
             name = resultSet.getString(2),
             address = resultSet.getString(3),
-            users = users,
-            messages = messages
+            users,
+            messages
           )
         ),
         message = None
@@ -77,20 +73,20 @@ object Server {
     }
   }
 
-  def getServerById(id: Int)(implicit connection: Connection): Result[RootServer] =
+  def getServerById(id: Int)(implicit connection: Connection): Result[Server] =
     getServer(id.toString, ServerQueries.getServerById)
 
-  def getServerByName(name: String)(implicit connection: Connection): Result[RootServer] =
+  def getServerByName(name: String)(implicit connection: Connection): Result[Server] =
     getServer(name, ServerQueries.getServerByName)
 
-  def getServerByAddress(address: String)(implicit connection: Connection): Result[RootServer] =
+  def getServerByAddress(address: String)(implicit connection: Connection): Result[Server] =
     getServer(address, ServerQueries.getServerByAddress)
 
-  private def getServerUsers(id: Int)(implicit connection: Connection): List[ChildServerUserRole] =
+  private def getServerUsers(id: Int)(implicit connection: Connection): List[ServerUserRole] =
     Query.runAndIterate(
       ServerQueries.getServerUsers,
       List(id),
-      resultSet => ChildServerUserRole(
+      resultSet => ServerUserRole(
         user = ChildUser(
           id = resultSet.getInt(1),
           username = resultSet.getString(2),

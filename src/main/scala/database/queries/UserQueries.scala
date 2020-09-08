@@ -1,6 +1,6 @@
 package database.queries
 
-object User {
+object UserQueries {
   def checkUsernameExists: String = "SELECT * FROM users WHERE username = ?"
 
   def createUser: String = "INSERT INTO users " +

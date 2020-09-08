@@ -3,12 +3,11 @@ package database.actions
 import java.sql.Connection
 
 import model._
-import model.converters.ElementConverters.ToReadable
 import database.Query
-import database.queries.{Message => MessageQueries}
+import database.queries.MessageQueries
 
-object Message {
-  def createMessage(message: Message)(implicit connection: Connection): Result[RootMessage] = {
+object MessageActions {
+  def createMessage(message: Message)(implicit connection: Connection): Result[Message] = {
     val resultSet = Query.run(
       MessageQueries.createMessage,
       List(
@@ -22,11 +21,11 @@ object Message {
     if (resultSet.getRow <= 0) throw ApiException(FailureMessages.GENERIC)
     else Success(
       result = Some(
-        RootMessage(
+        Message(
           id = resultSet.getInt(1),
           content = message.content,
-          sender = message.sender.toChildReadable,
-          server = message.server.toChildReadable,
+          sender = message.sender,
+          server = message.server,
           createdAt = message.createdAt
         )
       ),

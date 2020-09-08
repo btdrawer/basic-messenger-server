@@ -22,13 +22,3 @@ case class ChildMessage(
   sender: ChildUser,
   createdAt: Instant
 ) extends ChildElement
-
-case class ChildUserServerRole(
-  server: ChildServer,
-  role: Role.Value
-) extends ChildElement
-
-case class ChildServerUserRole(
-  user: ChildUser,
-  role: Role.Value
-) extends ChildElement
