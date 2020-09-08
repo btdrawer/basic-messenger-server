@@ -35,7 +35,8 @@ object User extends JsonConverters {
       },
       delete {
         path(Segment) { id =>
-          ???
+          val result: Future[Result[NoRootElement]] = Future(UserActions.deleteUser(id.toInt))
+          onComplete(result)(complete(_))
         }
       }
     )

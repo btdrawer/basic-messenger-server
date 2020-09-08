@@ -4,12 +4,12 @@ import java.sql.Connection
 
 import model._
 import model.converters.ElementConverters.ToReadable
-import database.RunQuery
+import database.Query
 import database.queries.{Message => MessageQueries}
 
 object Message {
   def createMessage(message: Message)(implicit connection: Connection): Result[RootMessage] = {
-    val resultSet = RunQuery(
+    val resultSet = Query.run(
       MessageQueries.createMessage,
       List(
         message.content,

@@ -3,7 +3,7 @@ package database.actions
 import java.sql.Connection
 
 import model._
-import database.RunQuery
+import database.Query
 import database.queries.{Server => ServerQueries}
 
 object Server {
@@ -13,7 +13,7 @@ object Server {
     val isAddressTaken = getServerByAddress(server.address)
     if (isAddressTaken.success) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
     else {
-      val resultSet = RunQuery(
+      val resultSet = Query.run(
         ServerQueries.createServer,
         List(
           server.name,
@@ -37,20 +37,16 @@ object Server {
     }
   }
 
-  private def findServers(query: String, template: String)(implicit connection: Connection): List[ChildServer] = {
-    val resultSet = RunQuery(query, List(template))
-    val servers = List[ChildServer]()
-    while (resultSet.next()) {
-      servers.+:(
-        ChildServer(
-          id = resultSet.getInt(1),
-          name = resultSet.getString(2),
-          address = resultSet.getString(3)
-        )
+  private def findServers(query: String, template: String)(implicit connection: Connection): List[ChildServer] =
+    Query.runAndIterate(
+      query,
+      List(template),
+      resultSet => ChildServer(
+        id = resultSet.getInt(1),
+        name = resultSet.getString(2),
+        address = resultSet.getString(3)
       )
-    }
-    servers
-  }
+    )
 
   def findServersByName(name: String)(implicit connection: Connection): List[ChildServer] =
     findServers(name, ServerQueries.findServersByName)
@@ -59,7 +55,7 @@ object Server {
     findServers(address, ServerQueries.findServersByAddress)
 
   private def getServer(query: String, template: String)(implicit connection: Connection): Result[RootServer] = {
-    val resultSet = RunQuery(query, List(template))
+    val resultSet = Query.run(query, List(template))
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
@@ -90,46 +86,33 @@ object Server {
   def getServerByAddress(address: String)(implicit connection: Connection): Result[RootServer] =
     getServer(address, ServerQueries.getServerByAddress)
 
-  private def getServerUsers(id: Int)(implicit connection: Connection): List[ChildServerUserRole] = {
-    val resultSet = RunQuery(ServerQueries.getServerUsers, List(id))
-    resultSet.first()
-    val userRoleList = List[ChildServerUserRole]()
-    while(resultSet.next()) {
-      userRoleList.+:(
-        ChildServerUserRole(
-          user = ChildUser(
-            id = resultSet.getInt(1),
-            username = resultSet.getString(2),
-            status = Status.withName(resultSet.getString(3))
-          ),
-          role = Role.withName(resultSet.getString(5))
-        )
-      )
-    }
-    userRoleList
-  }
-
-  def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] = {
-    val resultSet = RunQuery(
-      ServerQueries.getServerById,
-      List(id, limit, offset)
-    )
-    resultSet.first()
-    val messages = List[ChildMessage]()
-    while(resultSet.next()) {
-      messages.+:(
-        ChildMessage(
+  private def getServerUsers(id: Int)(implicit connection: Connection): List[ChildServerUserRole] =
+    Query.runAndIterate(
+      ServerQueries.getServerUsers,
+      List(id),
+      resultSet => ChildServerUserRole(
+        user = ChildUser(
           id = resultSet.getInt(1),
-          content = resultSet.getString(2),
-          sender = ChildUser(
-            id = resultSet.getInt(3),
-            username = resultSet.getString(4),
-            status = Status.withName(resultSet.getString(5))
-          ),
-          createdAt = resultSet.getDate(7).toInstant
-        )
+          username = resultSet.getString(2),
+          status = Status.withName(resultSet.getString(3))
+        ),
+        role = Role.withName(resultSet.getString(5))
       )
-    }
-    messages
-  }
+    )
+
+  def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] =
+    Query.runAndIterate(
+      ServerQueries.getServerById,
+      List(id, limit, offset),
+      resultSet => ChildMessage(
+        id = resultSet.getInt(1),
+        content = resultSet.getString(2),
+        sender = ChildUser(
+          id = resultSet.getInt(3),
+          username = resultSet.getString(4),
+          status = Status.withName(resultSet.getString(5))
+        ),
+        createdAt = resultSet.getDate(7).toInstant
+      )
+    )
 }
