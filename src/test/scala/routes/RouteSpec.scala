@@ -6,11 +6,15 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import app.App
 import model.JsonConverters
 
 class RouteSpec extends AnyWordSpec
-  with Matchers with ScalatestRouteTest with JsonConverters with SeedDatabase {
-  lazy val routes: Route = Main()
+  with Matchers
+  with ScalatestRouteTest
+  with JsonConverters
+  with DatabaseSeeder {
+  lazy val routes: Route = App.routes
 
   def createPostRoute(params: String): HttpRequest = {
     val entity = HttpEntity(ContentType(MediaTypes.`application/json`), params)
