@@ -8,7 +8,7 @@ object UserQueries {
     "VALUES (?, ?, 'OFFLINE', ?, ?) " +
     "RETURNING id, username, status"
 
-  def getUser: String = "SELECT username, statuses.id AS statusId FROM users " +
+  def getUser: String = "SELECT username, statuses.id AS statusid FROM users " +
     "JOIN statuses ON users.status = statuses.id " +
     "WHERE users.id = ?"
   def getUserId: String = "SELECT id FROM user WHERE username = ?"

@@ -4,10 +4,12 @@ import java.sql.Connection
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+
+import scala.concurrent.{ExecutionContext, Future}
 import model.{JsonConverters, _}
 import database.actions.UserActions
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 object UserRoutes extends JsonConverters {
    def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = pathPrefix("users") {

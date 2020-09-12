@@ -17,11 +17,10 @@ object Main extends Directives with JsonConverters {
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
   }
 
-  def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route = {
+  def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route =
     handleExceptions(exceptionHandler) {
       concat(
         UserRoutes()
       )
     }
-  }
 }
