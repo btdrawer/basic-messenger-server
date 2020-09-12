@@ -15,4 +15,11 @@ INSERT INTO statuses (id, name)
 INSERT INTO password_reset_questions (id, question) VALUES (1, 'Example question');
 
 INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
-    VALUES (1, 'ben', 'password', 'OFFLINE', 1, 'Hello');
+    VALUES (1, 'ben', 'Password222', 'OFFLINE', 1, 'Hello');
+INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
+    VALUES (2, 'ben2', 'Password223', 'OFFLINE', 1, 'Hello');
+
+INSERT INTO servers (id, name, address) VALUES (1, 'Example Server', 'exampleserver');
+
+INSERT INTO server_users ("user", server, role) VALUES (1, 1, 'ADMIN');
+INSERT INTO server_users ("user", server, role) VALUES (2, 1, 'MEMBER');

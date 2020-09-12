@@ -1,5 +1,7 @@
 package model
 
+import java.time.Instant
+
 sealed trait Creatable
 
 case class CreatableServer(
@@ -16,4 +18,9 @@ case class CreatableUser(
 
 case class CreatablePasswordReset(question: Int, answer: String) extends Creatable
 
-case class CreatableMessage(content: String, sender: String) extends Creatable
+case class CreatableMessage(
+  content: String,
+  sender: Int,
+  server: Int,
+  createdAt: Instant
+) extends Creatable

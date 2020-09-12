@@ -16,8 +16,8 @@ class RouteSpec extends AnyWordSpec
   with DatabaseSeeder {
   lazy val routes: Route = App.routes
 
-  def createPostRoute(params: String): HttpRequest = {
+  def createPostRoute(route: String, params: String): HttpRequest = {
     val entity = HttpEntity(ContentType(MediaTypes.`application/json`), params)
-    Post("/users").withEntity(entity)
+    Post(route).withEntity(entity)
   }
 }

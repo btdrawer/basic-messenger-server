@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
 
 import model.{ApiException, Failure, JsonConverters}
-import routes.UserRoutes
+import routes._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
@@ -37,7 +37,9 @@ object App extends Directives with JsonConverters {
 
   def routes: Route = handleExceptions(exceptionHandler) {
     concat(
-      UserRoutes()
+      ServerRoutes(),
+      UserRoutes(),
+      MessageRoutes()
     )
   }
 

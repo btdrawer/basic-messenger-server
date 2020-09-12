@@ -7,13 +7,15 @@ import database.Query
 import database.queries.MessageQueries
 
 object MessageActions {
-  def createMessage(message: Message)(implicit connection: Connection): Result[Message] = {
+  def createMessage(message: CreatableMessage)(implicit connection: Connection): Result[Message] = {
+    val server = ServerActions.getServerAsChildElement(message.server)
+    val sender = ServerActions.getServerUser(message.server, message.sender)
     val resultSet = Query.runQuery(
       MessageQueries.createMessage,
       List(
         message.content,
-        message.sender.id,
-        message.server.id,
+        message.sender,
+        message.server,
         message.createdAt.toString
       )
     )
@@ -24,8 +26,8 @@ object MessageActions {
         Message(
           id = resultSet.getInt(1),
           content = message.content,
-          sender = message.sender,
-          server = message.server,
+          server,
+          sender,
           createdAt = message.createdAt
         )
       ),

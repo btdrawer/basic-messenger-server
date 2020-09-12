@@ -12,9 +12,13 @@ object UserQueries {
     "JOIN statuses ON users.status = statuses.id " +
     "WHERE users.id = ?"
   def getUserId: String = "SELECT id FROM user WHERE username = ?"
-  def getUserServers: String = "SELECT servers.id AS id, name, address, role FROM servers " +
+
+  def getUserServers: String = "SELECT servers.id AS serverid, name, address, role FROM servers " +
     "JOIN server_users ON servers.id = server_users.server " +
     "WHERE server_users.user = ?"
+  def getUserServer: String = "SELECT servers.id AS serverid, name, address, role FROM servers " +
+    "JOIN server_users ON servers.id = server_users.server " +
+    "WHERE servers.id = ?"
 
   def updateUsername: String = "UPDATE users SET username = ? WHERE id = ?" +
     "RETURNING id, username, status"

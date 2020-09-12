@@ -5,7 +5,7 @@ import spray.json.enrichAny
 import model._
 
 class UserRouteSpec extends RouteSpec {
-  "The service" should {
+  "The user endpoints" should {
     // Create user
 
     "create a new user" in {
@@ -17,7 +17,7 @@ class UserRouteSpec extends RouteSpec {
           answer = "Hi"
         )
       ).toJson.toString
-      val request = this.createPostRoute(params)
+      val request = this.createPostRoute("/users", params)
       request ~!> routes ~> check {
         val res = responseAs[Result[User]]
         res.result.get.username shouldEqual "ben2"
@@ -34,7 +34,7 @@ class UserRouteSpec extends RouteSpec {
           answer = "Hi"
         )
       ).toJson.toString
-      val request = this.createPostRoute(params)
+      val request = this.createPostRoute("/users", params)
       request ~!> routes ~> check {
         responseAs[Result[User]] shouldEqual Failure(
           "Your password must be at least 8 characters and contain " +
@@ -52,7 +52,7 @@ class UserRouteSpec extends RouteSpec {
           answer = "Hi"
         )
       ).toJson.toString
-      val request = this.createPostRoute(params)
+      val request = this.createPostRoute("/users", params)
       request ~!> routes ~> check {
         responseAs[Result[User]] shouldEqual Failure(
           "A user with that username already exists."

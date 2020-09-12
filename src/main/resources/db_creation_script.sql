@@ -5,7 +5,7 @@
 -- Dumped from database version 12.4
 -- Dumped by pg_dump version 12.0
 
--- Started on 2020-09-06 15:41:34 BST
+-- Started on 2020-09-12 22:06:46 BST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,23 +19,25 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+-- TOC entry 3197 (class 1262 OID 16393)
+-- Name: basic-messenger; Type: DATABASE; Schema: -; Owner: -
 --
 
-CREATE SCHEMA public;
+CREATE DATABASE "basic-messenger" WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'C' LC_CTYPE = 'C';
 
 
-ALTER SCHEMA public OWNER TO postgres;
+\connect -reuse-previous=on "dbname='basic-messenger'"
 
---
--- TOC entry 3197 (class 0 OID 0)
--- Dependencies: 3
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
 
 SET default_tablespace = '';
 
@@ -43,7 +45,7 @@ SET default_table_access_method = heap;
 
 --
 -- TOC entry 213 (class 1259 OID 16561)
--- Name: messages; Type: TABLE; Schema: public; Owner: postgres
+-- Name: messages; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.messages (
@@ -55,11 +57,9 @@ CREATE TABLE public.messages (
 );
 
 
-ALTER TABLE public.messages OWNER TO postgres;
-
 --
 -- TOC entry 212 (class 1259 OID 16559)
--- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.messages ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -74,7 +74,7 @@ ALTER TABLE public.messages ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 --
 -- TOC entry 205 (class 1259 OID 16495)
--- Name: password_reset_questions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: password_reset_questions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.password_reset_questions (
@@ -83,11 +83,9 @@ CREATE TABLE public.password_reset_questions (
 );
 
 
-ALTER TABLE public.password_reset_questions OWNER TO postgres;
-
 --
 -- TOC entry 204 (class 1259 OID 16493)
--- Name: password_reset_questions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: password_reset_questions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.password_reset_questions ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -102,7 +100,7 @@ ALTER TABLE public.password_reset_questions ALTER COLUMN id ADD GENERATED ALWAYS
 
 --
 -- TOC entry 203 (class 1259 OID 16410)
--- Name: roles; Type: TABLE; Schema: public; Owner: postgres
+-- Name: roles; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.roles (
@@ -111,11 +109,9 @@ CREATE TABLE public.roles (
 );
 
 
-ALTER TABLE public.roles OWNER TO postgres;
-
 --
 -- TOC entry 211 (class 1259 OID 16536)
--- Name: server_users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: server_users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.server_users (
@@ -126,11 +122,9 @@ CREATE TABLE public.server_users (
 );
 
 
-ALTER TABLE public.server_users OWNER TO postgres;
-
 --
 -- TOC entry 210 (class 1259 OID 16534)
--- Name: server_users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: server_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.server_users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -145,7 +139,7 @@ ALTER TABLE public.server_users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY
 
 --
 -- TOC entry 209 (class 1259 OID 16526)
--- Name: servers; Type: TABLE; Schema: public; Owner: postgres
+-- Name: servers; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.servers (
@@ -155,11 +149,9 @@ CREATE TABLE public.servers (
 );
 
 
-ALTER TABLE public.servers OWNER TO postgres;
-
 --
 -- TOC entry 208 (class 1259 OID 16524)
--- Name: servers_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: servers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.servers ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -174,7 +166,7 @@ ALTER TABLE public.servers ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 --
 -- TOC entry 202 (class 1259 OID 16402)
--- Name: statuses; Type: TABLE; Schema: public; Owner: postgres
+-- Name: statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.statuses (
@@ -183,11 +175,9 @@ CREATE TABLE public.statuses (
 );
 
 
-ALTER TABLE public.statuses OWNER TO postgres;
-
 --
 -- TOC entry 207 (class 1259 OID 16505)
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -200,11 +190,9 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
-
 --
 -- TOC entry 206 (class 1259 OID 16503)
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -219,7 +207,7 @@ ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 --
 -- TOC entry 3058 (class 2606 OID 16568)
--- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.messages
@@ -228,7 +216,7 @@ ALTER TABLE ONLY public.messages
 
 --
 -- TOC entry 3050 (class 2606 OID 16502)
--- Name: password_reset_questions password_reset_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: password_reset_questions password_reset_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.password_reset_questions
@@ -237,7 +225,7 @@ ALTER TABLE ONLY public.password_reset_questions
 
 --
 -- TOC entry 3056 (class 2606 OID 16543)
--- Name: server_users server_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: server_users server_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.server_users
@@ -246,7 +234,7 @@ ALTER TABLE ONLY public.server_users
 
 --
 -- TOC entry 3054 (class 2606 OID 16533)
--- Name: servers servers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: servers servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.servers
@@ -255,7 +243,7 @@ ALTER TABLE ONLY public.servers
 
 --
 -- TOC entry 3048 (class 2606 OID 16417)
--- Name: roles user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: roles user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.roles
@@ -264,7 +252,7 @@ ALTER TABLE ONLY public.roles
 
 --
 -- TOC entry 3046 (class 2606 OID 16409)
--- Name: statuses user_status_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: statuses user_status_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.statuses
@@ -273,7 +261,7 @@ ALTER TABLE ONLY public.statuses
 
 --
 -- TOC entry 3052 (class 2606 OID 16512)
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -282,7 +270,7 @@ ALTER TABLE ONLY public.users
 
 --
 -- TOC entry 3060 (class 2606 OID 16518)
--- Name: users password_reset_question; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users password_reset_question; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -291,7 +279,7 @@ ALTER TABLE ONLY public.users
 
 --
 -- TOC entry 3063 (class 2606 OID 16554)
--- Name: server_users role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: server_users role; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.server_users
@@ -300,7 +288,7 @@ ALTER TABLE ONLY public.server_users
 
 --
 -- TOC entry 3062 (class 2606 OID 16549)
--- Name: server_users server; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: server_users server; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.server_users
@@ -309,7 +297,7 @@ ALTER TABLE ONLY public.server_users
 
 --
 -- TOC entry 3064 (class 2606 OID 16569)
--- Name: messages server; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: messages server; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.messages
@@ -318,7 +306,7 @@ ALTER TABLE ONLY public.messages
 
 --
 -- TOC entry 3059 (class 2606 OID 16513)
--- Name: users status; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users status; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -327,7 +315,7 @@ ALTER TABLE ONLY public.users
 
 --
 -- TOC entry 3061 (class 2606 OID 16544)
--- Name: server_users user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: server_users user; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.server_users
@@ -336,14 +324,24 @@ ALTER TABLE ONLY public.server_users
 
 --
 -- TOC entry 3065 (class 2606 OID 16574)
--- Name: messages user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: messages user; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.messages
     ADD CONSTRAINT "user" FOREIGN KEY ("user") REFERENCES public.users(id);
 
+--
+-- Add status and role resources
+--
 
--- Completed on 2020-09-06 15:41:35 BST
+INSERT INTO public.statuses (id, name)
+    VALUES ('ONLINE', 'online'), ('BUSY', 'busy'), ('OFFLINE', 'offline');
+
+INSERT INTO public.roles (id, name)
+    VALUES ('ADMIN', 'admin'), ('MODERATOR', 'moderator'), ('MEMBER', 'member');
+
+
+-- Completed on 2020-09-12 22:06:46 BST
 
 --
 -- PostgreSQL database dump complete

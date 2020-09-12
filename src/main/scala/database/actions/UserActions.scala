@@ -4,7 +4,7 @@ import java.sql.Connection
 
 import model._
 import database.Query
-import database.queries.UserQueries
+import database.queries.{ServerQueries, UserQueries}
 
 object UserActions {
   private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {

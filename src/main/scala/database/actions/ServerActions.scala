@@ -2,41 +2,57 @@ package database.actions
 
 import java.sql.Connection
 
-import model._
+import model.{Success, _}
 import database.Query
 import database.queries.ServerQueries
 
 object ServerActions {
+  private def checkAddressTaken(address: String)(implicit connection: Connection): Boolean = {
+    val resultSet = Query.runQuery(
+      ServerQueries.getServerByAddress,
+      List(address)
+    )
+    resultSet.first()
+    resultSet.getRow > 0
+  }
+
   def createServer(server: CreatableServer)(implicit connection: Connection): Result[Server] = {
-    val isNameTaken = getServerByName(server.name)
-    if (isNameTaken.success) throw ApiException(FailureMessages.SERVER_NAME_TAKEN)
-    val isAddressTaken = getServerByAddress(server.address)
-    if (isAddressTaken.success) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
+    val isAddressTaken = checkAddressTaken(server.address)
+    if (isAddressTaken) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
     else {
       val resultSet = Query.runQuery(
         ServerQueries.createServer,
-        List(server.name, server.address, server.creator)
+        List(server.name, server.address)
       )
       resultSet.first()
-      Success(
-        result = Some(
-          Server(
-            id = resultSet.getInt(1),
-            name = server.name,
-            address = server.address,
-            users = List[ServerUserRole](),
-            messages = List[ChildMessage]()
-          )
-        ),
-        message = None
+      val id = resultSet.getInt(1)
+      val rowsUpdated = Query.runUpdate(
+        ServerQueries.addUserToServer,
+        List(server.creator, id, Role.ADMIN.toString)
       )
+      if (rowsUpdated < 1) throw ApiException(FailureMessages.GENERIC)
+      else {
+        val serverUser = ServerActions.getServerUser(id, server.creator)
+        Success(
+          result = Some(
+            Server(
+              id,
+              name = server.name,
+              address = server.address,
+              users = List[ServerUserRole](serverUser),
+              messages = List[ChildMessage]()
+            )
+          ),
+          message = None
+        )
+      }
     }
   }
 
-  private def findServers(query: String, template: String)(implicit connection: Connection): List[ChildServer] =
+  def findServers(name: String)(implicit connection: Connection): List[ChildServer] =
     Query.runAndIterate(
-      query,
-      List(template),
+      ServerQueries.findServersByName,
+      List(name),
       resultSet => ChildServer(
         id = resultSet.getInt(1),
         name = resultSet.getString(2),
@@ -44,14 +60,8 @@ object ServerActions {
       )
     )
 
-  def findServersByName(name: String)(implicit connection: Connection): List[ChildServer] =
-    findServers(name, ServerQueries.findServersByName)
-
-  def findServersByAddress(address: String)(implicit connection: Connection): List[ChildServer] =
-    findServers(address, ServerQueries.findServersByAddress)
-
   private def getServer(query: String, template: String)(implicit connection: Connection): Result[Server] = {
-    val resultSet = Query.runQuery(query, List(template))
+    val resultSet = Query.runQuery(template, List(query))
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
@@ -61,7 +71,7 @@ object ServerActions {
       Success(
         result = Some(
           Server(
-            id = id,
+            id,
             name = resultSet.getString(2),
             address = resultSet.getString(3),
             users,
@@ -75,9 +85,6 @@ object ServerActions {
 
   def getServerById(id: Int)(implicit connection: Connection): Result[Server] =
     getServer(id.toString, ServerQueries.getServerById)
-
-  def getServerByName(name: String)(implicit connection: Connection): Result[Server] =
-    getServer(name, ServerQueries.getServerByName)
 
   def getServerByAddress(address: String)(implicit connection: Connection): Result[Server] =
     getServer(address, ServerQueries.getServerByAddress)
@@ -95,6 +102,34 @@ object ServerActions {
         role = Role.withName(resultSet.getString(5))
       )
     )
+
+  def getServerUser(serverId: Int, userId: Int)(implicit connection: Connection): ServerUserRole = {
+    val resultSet = Query.runQuery(
+      ServerQueries.getServerUser,
+      List(serverId, userId)
+    )
+    resultSet.first()
+    if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else ServerUserRole(
+      user = ChildUser(
+        id = resultSet.getInt(1),
+        username = resultSet.getString(2),
+        status = Status.withName(resultSet.getString(3))
+      ),
+      role = Role.withName(resultSet.getString(4))
+    )
+  }
+
+  def getServerAsChildElement(id: Int)(implicit connection: Connection): ChildServer = {
+    val resultSet = Query.runQuery(ServerQueries.getServerById, List(id))
+    resultSet.first()
+    if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    else ChildServer(
+      id,
+      name = resultSet.getString(2),
+      address = resultSet.getString(3)
+    )
+  }
 
   def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] =
     Query.runAndIterate(
