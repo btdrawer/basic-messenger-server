@@ -18,7 +18,7 @@ object Query {
     statement
   }
 
-  def run(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
+  def runQuery(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
     val statement = prepareStatement(query, parameters)
     statement.executeQuery()
   }
@@ -33,7 +33,12 @@ object Query {
     parameters: List[Any],
     iterator: ResultSet => T
   )(implicit connection: Connection): List[T] = {
-    val resultSet = run(query, parameters)
+    val resultSet = runQuery(query, parameters)
     iterateResultSet(List[T](), resultSet, iterator)
+  }
+
+  def runUpdate(query: String, parameters: List[Any])(implicit connection: Connection): Int = {
+    val statement = prepareStatement(query, parameters)
+    statement.executeUpdate()
   }
 }

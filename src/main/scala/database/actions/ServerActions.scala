@@ -13,7 +13,7 @@ object ServerActions {
     val isAddressTaken = getServerByAddress(server.address)
     if (isAddressTaken.success) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
     else {
-      val resultSet = Query.run(
+      val resultSet = Query.runQuery(
         ServerQueries.createServer,
         List(server.name, server.address, server.creator)
       )
@@ -51,7 +51,7 @@ object ServerActions {
     findServers(address, ServerQueries.findServersByAddress)
 
   private def getServer(query: String, template: String)(implicit connection: Connection): Result[Server] = {
-    val resultSet = Query.run(query, List(template))
+    val resultSet = Query.runQuery(query, List(template))
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {

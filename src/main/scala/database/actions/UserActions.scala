@@ -8,7 +8,7 @@ import database.queries.UserQueries
 
 object UserActions {
   private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
-    val resultSet = Query.run(
+    val resultSet = Query.runQuery(
       UserQueries.checkUsernameExists,
       List(username)
     )
@@ -28,7 +28,7 @@ object UserActions {
     if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
     else if (!passwordIsValid) throw ApiException(FailureMessages.PASSWORD_INVALID)
     else {
-      val resultSet = Query.run(
+      val resultSet = Query.runQuery(
         UserQueries.createUser,
         List(
           user.username,
@@ -67,7 +67,7 @@ object UserActions {
     )
 
   def getUser(id: Int)(implicit connection: Connection): Result[User] = {
-    val resultSet = Query.run(UserQueries.getUser, List(id))
+    val resultSet = Query.runQuery(UserQueries.getUser, List(id))
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
@@ -92,7 +92,7 @@ object UserActions {
     val usernameExists = checkUsernameExists(username)
     if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
-      val resultSet = Query.run(
+      val resultSet = Query.runQuery(
         UserQueries.updateUsername,
         List(username, id)
       )
@@ -105,7 +105,7 @@ object UserActions {
   }
 
   def updateStatus(id: Int, status: Status.Value)(implicit connection: Connection): Result[User] = {
-    val resultSet = Query.run(
+    val resultSet = Query.runQuery(
       UserQueries.updateUsername,
       List(status.toString, id)
     )
@@ -117,7 +117,7 @@ object UserActions {
   }
 
   def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] = {
-    Query.run(UserQueries.deleteUser, List(id))
+    Query.runUpdate(UserQueries.deleteUser, List(id))
     Success(
       result = None,
       message = Some("User deleted.")

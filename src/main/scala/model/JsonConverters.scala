@@ -29,7 +29,7 @@ class InstantJsonConverter extends RootJsonFormat[Instant] {
   }
 }
 
-trait JsonConverters extends SprayJsonSupport with DefaultJsonProtocol {
+trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
   // Resources
 
   implicit val instantFormat: RootJsonFormat[Instant] = new InstantJsonConverter

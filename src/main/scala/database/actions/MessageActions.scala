@@ -8,7 +8,7 @@ import database.queries.MessageQueries
 
 object MessageActions {
   def createMessage(message: Message)(implicit connection: Connection): Result[Message] = {
-    val resultSet = Query.run(
+    val resultSet = Query.runQuery(
       MessageQueries.createMessage,
       List(
         message.content,
