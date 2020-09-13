@@ -1,8 +1,9 @@
-package database
+package authentication
 
 import javax.crypto.{Cipher, KeyGenerator}
 
 object Encryption {
+
   implicit class EncryptionString(val str: String) extends AnyVal {
     def encrypt(): Array[Byte] = {
       val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
@@ -15,4 +16,5 @@ object Encryption {
 
     def compare(password: String): Boolean = ???
   }
+
 }

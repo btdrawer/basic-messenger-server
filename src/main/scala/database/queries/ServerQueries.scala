@@ -3,7 +3,6 @@ package database.queries
 object ServerQueries {
   def createServer: String = "INSERT INTO servers (name, address) VALUES (?, ?) " +
     "RETURNING id, name, address;"
-  def addUserToServer: String = "INSERT INTO server_users (\"user\", server, role) VALUES (?, ?, ?);"
 
   def findServersByName: String = "SELECT id, name, address FROM servers WHERE name ILIKE ?"
 
@@ -23,4 +22,21 @@ object ServerQueries {
     "JOIN users ON users.id = messages.sender " +
     "WHERE messages.server = ? " +
     "LIMIT ? OFFSET ?"
+
+  def addServerUser: String =
+    """
+      |INSERT INTO server_users (server, "user", role)
+      | VALUES (?, ?, ?)
+      |""".stripMargin
+  def updateUserRole: String =
+    """
+      |UPDATE server_users
+      | SET role = ?
+      | WHERE server = ? AND "user" = ?
+      |""".stripMargin
+  def removeServerUser: String =
+    """
+      |DELETE FROM server_users
+      | WHERE server = ? AND "user" = ?
+      |""".stripMargin
 }

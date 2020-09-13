@@ -45,12 +45,33 @@ object ServerRoutes extends JsonConverters {
             ???
           }
         },
+        put {
+          path(Segment / "users" / Segment) { (server, user) =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActions.addServerUser(server.toInt, user.toInt))
+            onComplete(result)(complete(_))
+          }
+        },
+        put {
+          path(Segment / "users" / Segment / "roles" / Segment) { (server, member, role) =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActions.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
+            onComplete(result)(complete(_))
+          }
+        },
         delete {
           path(Segment) { id =>
             val result: Future[Result[NoRootElement]] = Future(UserActions.deleteUser(id.toInt))
             onComplete(result)(complete(_))
           }
-        }
+        },
+        delete {
+          path(Segment / "users" / Segment) { (server, user) =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActions.removeServerUser(server.toInt, user.toInt))
+            onComplete(result)(complete(_))
+          }
+        },
       )
   }
 }

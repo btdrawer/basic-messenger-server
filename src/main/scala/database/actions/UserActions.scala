@@ -3,17 +3,16 @@ package database.actions
 import java.sql.Connection
 
 import model._
-import database.Query
 import database.queries.UserQueries
 
-object UserActions extends UpdatableConverters {
+object UserActions extends Actions {
   def usernameExists(username: String)(implicit connection: Connection): Boolean = {
-    val resultSet = Query.runAndGetFirst(UserQueries.checkUsernameExists, List(username))
+    val resultSet = runAndGetFirst(UserQueries.checkUsernameExists, List(username))
     resultSet.getRow > 0
   }
 
   def userIdExists(id: Int)(implicit connection: Connection): Boolean = {
-    val resultSet = Query.runAndGetFirst(UserQueries.getUser, List(id))
+    val resultSet = runAndGetFirst(UserQueries.getUser, List(id))
     resultSet.getRow > 0
   }
 
@@ -29,7 +28,7 @@ object UserActions extends UpdatableConverters {
     else if (usernameExists(user.username))
       throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
-      val resultSet = Query.runAndGetFirst(
+      val resultSet = runAndGetFirst(
         UserQueries.createUser,
         List(
           user.username,
@@ -52,7 +51,7 @@ object UserActions extends UpdatableConverters {
     }
 
   private def getUserServers(id: Int)(implicit connection: Connection): List[UserServerRole] =
-    Query.runAndIterate(
+    runAndIterate(
       UserQueries.getUserServers,
       List(id),
       resultSet => UserServerRole(
@@ -66,7 +65,7 @@ object UserActions extends UpdatableConverters {
     )
 
   def getUser(id: Int)(implicit connection: Connection): Result[User] = {
-    val resultSet = Query.runAndGetFirst(UserQueries.getUser, List(id))
+    val resultSet = runAndGetFirst(UserQueries.getUser, List(id))
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       val servers = getUserServers(id)
@@ -85,7 +84,7 @@ object UserActions extends UpdatableConverters {
   }
 
   def updateUser(id: Int, user: UpdatableUser)(implicit connection: Connection): Result[User] = {
-    Query.runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
+    runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
     val userResult = getUser(id)
     Success(
       result = userResult.result,
@@ -97,7 +96,7 @@ object UserActions extends UpdatableConverters {
     if (usernameExists(username))
       throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
-      Query.runUpdate(UserQueries.updateUsername, List(username, id))
+      runUpdate(UserQueries.updateUsername, List(username, id))
       Success(
         result = None,
         message = Some("Your username has been updated.")
@@ -106,7 +105,7 @@ object UserActions extends UpdatableConverters {
   }
 
   def updateStatus(id: Int, status: Status.Value)(implicit connection: Connection): Result[User] = {
-    Query.runUpdate(UserQueries.updateUsername, List(status.toString, id))
+    runUpdate(UserQueries.updateUsername, List(status.toString, id))
     Success(
       result = None,
       message = Some("Your status has been updated.")
@@ -116,7 +115,7 @@ object UserActions extends UpdatableConverters {
   def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] =
     if (!userIdExists(id)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
-      Query.runUpdate(UserQueries.deleteUser, List(id, id, id))
+      runUpdate(UserQueries.deleteUser, List(id, id, id))
       Success(
         result = None,
         message = Some("User deleted.")

@@ -71,7 +71,7 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
-    "should find servers that match a name" in {
+    "find servers that match a name" in {
       Get("/servers/search/ple%20ser") ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[List[ChildServer]] shouldEqual List(
@@ -84,14 +84,14 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
-    "should retrieve a server by its address" in {
+    "retrieve a server by its address" in {
       Get("/servers/address/exampleserver") ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[Server]] shouldEqual exampleServerResponseModel
       }
     }
 
-    "should return an error if the server address does not exist" in {
+    "return an error if the server address does not exist" in {
       Get("/servers/address/fakeserver") ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
@@ -100,18 +100,112 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
-    "should retrieve a server by its ID" in {
+    "retrieve a server by its ID" in {
       Get("/servers/id/1") ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[Server]] shouldEqual exampleServerResponseModel
       }
     }
 
-    "should return an error if the server ID does not exist" in {
+    "return an error if the server ID does not exist" in {
       Get("/servers/id/30") ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "Server not found."
+        )
+      }
+    }
+
+    "add a new member to a server" in {
+      Put("/servers/2/users/2") ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("User added to server.")
+        )
+      }
+    }
+
+    "not add a new member if server does not exist" in {
+      Put("/servers/30/users/2") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "Server not found."
+        )
+      }
+    }
+
+    "not add a new member if member does not exist" in {
+      Put("/servers/2/users/30") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "User not found."
+        )
+      }
+    }
+
+    "update user role to MODERATOR" in {
+      Put("/servers/2/users/2/roles/MODERATOR") ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("User role updated.")
+        )
+      }
+    }
+
+    "update user role to ADMIN" in {
+      Put("/servers/2/users/2/roles/ADMIN") ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("User role updated.")
+        )
+      }
+    }
+
+    "not update user role if server does not exist" in {
+      Put("/servers/30/users/2/roles/MODERATOR") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "Server not found."
+        )
+      }
+    }
+
+    "not update user role if user does not exist" in {
+      Put("/servers/2/users/30/roles/MODERATOR") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "User not found."
+        )
+      }
+    }
+
+    "remove user from server" in {
+      Delete("/servers/1/users/2") ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("User removed from server.")
+        )
+      }
+    }
+
+    "return error if server does not exist" in {
+      Delete("/servers/30/users/1") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "Server not found."
+        )
+      }
+    }
+
+    "return error if user does not exist" in {
+      Delete("/servers/2/users/30") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[Server]] shouldEqual Failure(
+          "User not found."
         )
       }
     }

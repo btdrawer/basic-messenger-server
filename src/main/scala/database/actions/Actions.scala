@@ -1,10 +1,12 @@
-package database
+package database.actions
 
 import java.sql.{Connection, PreparedStatement, ResultSet}
 
+import model.{JsonConverters, UpdatableConverters}
+
 import scala.annotation.tailrec
 
-object Query {
+trait Actions extends JsonConverters with UpdatableConverters {
   private def prepareStatement(
     query: String,
     parameters: List[Any]

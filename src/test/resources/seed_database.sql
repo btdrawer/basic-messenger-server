@@ -20,6 +20,8 @@ INSERT INTO users (id, username, password, status, password_reset_question, pass
     VALUES (2, 'ben2', 'Password223', 'OFFLINE', 1, 'Hello');
 
 INSERT INTO servers (id, name, address) VALUES (1, 'Example Server', 'exampleserver');
+INSERT INTO servers (id, name, address) VALUES (2, 'Second Server', 'server2');
 
 INSERT INTO server_users ("user", server, role) VALUES (1, 1, 'ADMIN');
 INSERT INTO server_users ("user", server, role) VALUES (2, 1, 'MEMBER');
+INSERT INTO server_users ("user", server, role) VALUES (1, 2, 'ADMIN');
