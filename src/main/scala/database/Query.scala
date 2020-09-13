@@ -23,6 +23,13 @@ object Query {
     statement.executeQuery()
   }
 
+  def runAndGetFirst(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
+    val statement = prepareStatement(query, parameters)
+    val resultSet = statement.executeQuery()
+    resultSet.first()
+    resultSet
+  }
+
   @tailrec
   private def iterateResultSet[T](acc: List[T], resultSet: ResultSet, iterator: ResultSet => T): List[T] =
     if (!resultSet.next()) acc

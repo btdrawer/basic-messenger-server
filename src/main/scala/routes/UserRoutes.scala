@@ -29,7 +29,12 @@ object UserRoutes extends JsonConverters {
       },
       put {
         path(Segment) { id =>
-          ???
+          decodeRequest {
+            entity(as[UpdatableUser]) { user =>
+              val result: Future[Result[User]] = Future(UserActions.updateUser(id.toInt, user))
+              onComplete(result)(complete(_))
+            }
+          }
         }
       },
       delete {

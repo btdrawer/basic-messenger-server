@@ -4,31 +4,32 @@ import java.sql.Connection
 
 import model._
 import database.Query
-import database.queries.{ServerQueries, UserQueries}
+import database.queries.UserQueries
 
-object UserActions {
-  private def checkUsernameExists(username: String)(implicit connection: Connection): Boolean = {
-    val resultSet = Query.runQuery(
-      UserQueries.checkUsernameExists,
-      List(username)
-    )
-    resultSet.first()
+object UserActions extends UpdatableConverters {
+  def usernameExists(username: String)(implicit connection: Connection): Boolean = {
+    val resultSet = Query.runAndGetFirst(UserQueries.checkUsernameExists, List(username))
     resultSet.getRow > 0
   }
 
-  private def checkPasswordIsValid(password: String): Boolean =
+  def userIdExists(id: Int)(implicit connection: Connection): Boolean = {
+    val resultSet = Query.runAndGetFirst(UserQueries.getUser, List(id))
+    resultSet.getRow > 0
+  }
+
+  def checkPasswordIsValid(password: String): Boolean =
     password.length > 7 &&
       password.matches(".*[0-9].*") &&
       password.matches(".*[a-z].*") &&
       password.matches(".*[A-Z].*")
 
-  def createUser(user: CreatableUser)(implicit connection: Connection): Result[User] = {
-    val usernameExists = checkUsernameExists(user.username)
-    val passwordIsValid = checkPasswordIsValid(user.password)
-    if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
-    else if (!passwordIsValid) throw ApiException(FailureMessages.PASSWORD_INVALID)
+  def createUser(user: CreatableUser)(implicit connection: Connection): Result[User] =
+    if (!checkPasswordIsValid(user.password))
+      throw ApiException(FailureMessages.PASSWORD_INVALID)
+    else if (usernameExists(user.username))
+      throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
-      val resultSet = Query.runQuery(
+      val resultSet = Query.runAndGetFirst(
         UserQueries.createUser,
         List(
           user.username,
@@ -37,7 +38,6 @@ object UserActions {
           user.passwordReset.answer
         )
       )
-      resultSet.first()
       Success(
         result = Some(
           User(
@@ -50,7 +50,6 @@ object UserActions {
         message = Some("User successfully created.")
       )
     }
-  }
 
   private def getUserServers(id: Int)(implicit connection: Connection): List[UserServerRole] =
     Query.runAndIterate(
@@ -67,8 +66,7 @@ object UserActions {
     )
 
   def getUser(id: Int)(implicit connection: Connection): Result[User] = {
-    val resultSet = Query.runQuery(UserQueries.getUser, List(id))
-    resultSet.first()
+    val resultSet = Query.runAndGetFirst(UserQueries.getUser, List(id))
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       val servers = getUserServers(id)
@@ -86,17 +84,20 @@ object UserActions {
     }
   }
 
-  // def updateUser(user: UpdatableUser)(implicit connection: Connection): model.results.UserResult = ???
+  def updateUser(id: Int, user: UpdatableUser)(implicit connection: Connection): Result[User] = {
+    Query.runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
+    val userResult = getUser(id)
+    Success(
+      result = userResult.result,
+      message = Some("User updated successfully.")
+    )
+  }
 
   def updateUsername(id: Int, username: String)(implicit connection: Connection): Result[User] = {
-    val usernameExists = checkUsernameExists(username)
-    if (usernameExists) throw ApiException(FailureMessages.USERNAME_EXISTS)
+    if (usernameExists(username))
+      throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
-      val resultSet = Query.runQuery(
-        UserQueries.updateUsername,
-        List(username, id)
-      )
-      resultSet.first()
+      Query.runUpdate(UserQueries.updateUsername, List(username, id))
       Success(
         result = None,
         message = Some("Your username has been updated.")
@@ -105,23 +106,20 @@ object UserActions {
   }
 
   def updateStatus(id: Int, status: Status.Value)(implicit connection: Connection): Result[User] = {
-    val resultSet = Query.runQuery(
-      UserQueries.updateUsername,
-      List(status.toString, id)
-    )
-    resultSet.first()
+    Query.runUpdate(UserQueries.updateUsername, List(status.toString, id))
     Success(
       result = None,
       message = Some("Your status has been updated.")
     )
   }
 
-  def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] = {
-    val rowsUpdated = Query.runUpdate(UserQueries.deleteUser, List(id, id, id))
-    if (rowsUpdated < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
-    else Success(
-      result = None,
-      message = Some("User deleted.")
-    )
-  }
+  def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] =
+    if (!userIdExists(id)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else {
+      Query.runUpdate(UserQueries.deleteUser, List(id, id, id))
+      Success(
+        result = None,
+        message = Some("User deleted.")
+      )
+    }
 }

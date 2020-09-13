@@ -113,6 +113,149 @@ class UserRouteSpec extends RouteSpec {
       }
     }
 
+    // Update user
+
+    "update a username" in {
+      val params = UpdatableUser(
+        username = Some("newben2"),
+        password = None,
+        status = None,
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val res = responseAs[Result[User]]
+        val user = res.result.get
+        user.id shouldEqual 1
+        user.username shouldEqual "newben2"
+        res.message shouldEqual Some("User updated successfully.")
+      }
+    }
+
+    "not update a username if it is already taken" in {
+      val params = UpdatableUser(
+        username = Some("ben"),
+        password = None,
+        status = None,
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[Result[User]] shouldEqual Failure(
+          "A user with that username already exists."
+        )
+      }
+    }
+
+    "update a password" in {
+      val params = UpdatableUser(
+        username = None,
+        password = Some("Newpassword12"),
+        status = None,
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val res = responseAs[Result[User]]
+        res.message shouldEqual Some("User updated successfully.")
+      }
+    }
+
+    "not update a password if it is invalid" in {
+      val params = UpdatableUser(
+        username = None,
+        password = Some("password"),
+        status = None,
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[Result[User]] shouldEqual Failure(
+          "Your password must be at least 8 characters and contain " +
+            "at least one lowercase letter, uppercase letter, and number."
+        )
+      }
+    }
+
+    "update a status" in {
+      val params = UpdatableUser(
+        username = None,
+        password = None,
+        status = Some(Status.ONLINE),
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val res = responseAs[Result[User]]
+        res.result.get.status shouldEqual Status.ONLINE
+        res.message shouldEqual Some("User updated successfully.")
+      }
+    }
+
+    "update password reset information" in {
+      val params = UpdatableUser(
+        username = None,
+        password = None,
+        status = None,
+        passwordReset = Some(
+          CreatablePasswordReset(
+            question = 1,
+            answer = "Updated answer"
+          )
+        )
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val res = responseAs[Result[User]]
+        res.message shouldEqual Some("User updated successfully.")
+      }
+    }
+
+    "update all user data at once" in {
+      val params = UpdatableUser(
+        username = Some("newben2"),
+        password = Some("Newpassword12"),
+        status = Some(Status.ONLINE),
+        passwordReset = Some(
+          CreatablePasswordReset(
+            question = 1,
+            answer = "Updated answer"
+          )
+        )
+      ).toJson.toString
+      val request = this.createPutRoute("/users/1", params)
+      request ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val res = responseAs[Result[User]]
+        val user = res.result.get
+        user.id shouldEqual 1
+        user.username shouldEqual "newben2"
+        user.status shouldEqual Status.ONLINE
+        res.message shouldEqual Some("User updated successfully.")
+      }
+    }
+
+    "not update user if not found" in {
+      val params = UpdatableUser(
+        username = Some("newben2"),
+        password = None,
+        status = None,
+        passwordReset = None
+      ).toJson.toString
+      val request = this.createPutRoute("/users/30", params)
+      request ~!> routes ~> check {
+        responseAs[Result[User]] shouldEqual Failure(
+          "User not found."
+        )
+      }
+    }
+
     // Delete user
 
     "delete a user" in {
