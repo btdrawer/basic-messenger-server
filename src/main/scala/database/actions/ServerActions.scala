@@ -1,6 +1,6 @@
 package database.actions
 
-import java.sql.Connection
+import java.sql.{Connection, ResultSet}
 
 import model.{Success, _}
 import database.Query
@@ -43,7 +43,7 @@ object ServerActions {
               messages = List[ChildMessage]()
             )
           ),
-          message = None
+          message = Some("Server successfully created.")
         )
       }
     }
@@ -52,7 +52,7 @@ object ServerActions {
   def findServers(name: String)(implicit connection: Connection): List[ChildServer] =
     Query.runAndIterate(
       ServerQueries.findServersByName,
-      List(name),
+      List(s"%$name%"),
       resultSet => ChildServer(
         id = resultSet.getInt(1),
         name = resultSet.getString(2),
@@ -60,8 +60,8 @@ object ServerActions {
       )
     )
 
-  private def getServer(query: String, template: String)(implicit connection: Connection): Result[Server] = {
-    val resultSet = Query.runQuery(template, List(query))
+  private def getServer(queryToRun: () => ResultSet)(implicit connection: Connection): Result[Server] = {
+    val resultSet = queryToRun()
     resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
@@ -84,10 +84,10 @@ object ServerActions {
   }
 
   def getServerById(id: Int)(implicit connection: Connection): Result[Server] =
-    getServer(id.toString, ServerQueries.getServerById)
+    getServer(() => Query.runQuery(ServerQueries.getServerById, List(id)))
 
   def getServerByAddress(address: String)(implicit connection: Connection): Result[Server] =
-    getServer(address, ServerQueries.getServerByAddress)
+    getServer(() => Query.runQuery(ServerQueries.getServerByAddress, List(address)))
 
   private def getServerUsers(id: Int)(implicit connection: Connection): List[ServerUserRole] =
     Query.runAndIterate(
@@ -99,7 +99,7 @@ object ServerActions {
           username = resultSet.getString(2),
           status = Status.withName(resultSet.getString(3))
         ),
-        role = Role.withName(resultSet.getString(5))
+        role = Role.withName(resultSet.getString(4))
       )
     )
 
@@ -133,7 +133,7 @@ object ServerActions {
 
   def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] =
     Query.runAndIterate(
-      ServerQueries.getServerById,
+      ServerQueries.getServerMessages,
       List(id, limit, offset),
       resultSet => ChildMessage(
         id = resultSet.getInt(1),

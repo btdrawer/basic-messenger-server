@@ -30,34 +30,41 @@ class InstantJsonConverter extends RootJsonFormat[Instant] {
 }
 
 trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
-  // Resources
-
   implicit val instantFormat: RootJsonFormat[Instant] = new InstantJsonConverter
+
+  // Enumeration
 
   implicit val roleFormat: EnumJsonConverter[Role.type] = new EnumJsonConverter[Role.type](Role)
   implicit val statusFormat: EnumJsonConverter[Status.type] = new EnumJsonConverter[Status.type](Status)
+
+  // Creatable
+
+  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat4(CreatableMessage)
+  implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat3(CreatableServer)
+  implicit val creatablePasswordResetFormat: RootJsonFormat[CreatablePasswordReset] =
+    jsonFormat2(CreatablePasswordReset)
+  implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat3(CreatableUser)
+
+  // ChildElement
+
+  implicit val childMessageFormat: RootJsonFormat[ChildMessage] = jsonFormat4(ChildMessage)
+  implicit val childServerFormat: RootJsonFormat[ChildServer] = jsonFormat3(ChildServer)
+  implicit val childUserFormat: RootJsonFormat[ChildUser] = jsonFormat3(ChildUser)
+
+  // RootElement
 
   implicit val passwordResetQuestionFormat: RootJsonFormat[PasswordResetQuestion] =
     jsonFormat2(PasswordResetQuestion)
   implicit val passwordResetFormat: RootJsonFormat[PasswordReset] = jsonFormat2(PasswordReset)
 
-  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat4(CreatableMessage)
-  implicit val messageFormat: RootJsonFormat[Message] = jsonFormat5(Message)
-  implicit val childMessageFormat: RootJsonFormat[ChildMessage] = jsonFormat4(ChildMessage)
-
-  implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat3(CreatableServer)
-  implicit val serverUserRoleFormat: RootJsonFormat[ServerUserRole] = jsonFormat2(ServerUserRole)
-  implicit val serverFormat: RootJsonFormat[Server] = jsonFormat5(Server)
-  implicit val childServerFormat: RootJsonFormat[ChildServer] = jsonFormat3(ChildServer)
-
-  implicit val creatablePasswordResetFormat: RootJsonFormat[CreatablePasswordReset] =
-    jsonFormat2(CreatablePasswordReset)
-  implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat3(CreatableUser)
   implicit val userServerRoleFormat: RootJsonFormat[UserServerRole] = jsonFormat2(UserServerRole)
-  implicit val userFormat: RootJsonFormat[User] = jsonFormat4(User)
-  implicit val childUserFormat: RootJsonFormat[ChildUser] = jsonFormat3(ChildUser)
+  implicit val serverUserRoleFormat: RootJsonFormat[ServerUserRole] = jsonFormat2(ServerUserRole)
 
-  // Results
+  implicit val messageFormat: RootJsonFormat[Message] = jsonFormat5(Message)
+  implicit val serverFormat: RootJsonFormat[Server] = jsonFormat5(Server)
+  implicit val userFormat: RootJsonFormat[User] = jsonFormat4(User)
+
+  // Result
 
   implicit val messageResultFormat: RootJsonFormat[Result[Message]] = jsonFormat3(Result[Message])
   implicit val serverResultFormat: RootJsonFormat[Result[Server]] = jsonFormat3(Result[Server])

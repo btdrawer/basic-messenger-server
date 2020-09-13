@@ -43,14 +43,14 @@ object App extends Directives with JsonConverters {
     )
   }
 
-  private def getServer: Future[Http.ServerBinding] = {
+  private def createServer(): Future[Http.ServerBinding] = {
     val host = System.getenv("SERVER_HOST")
     val port = System.getenv("SERVER_PORT")
     Http().newServerAt(host, port.toInt).bind(routes)
   }
 
   def main(args: Array[String]): Unit = {
-    val server = getServer
+    val server = createServer()
     println(s"Server online, press RETURN to stop...")
     StdIn.readLine()
     server

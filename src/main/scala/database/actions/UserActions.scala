@@ -117,8 +117,9 @@ object UserActions {
   }
 
   def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] = {
-    Query.runUpdate(UserQueries.deleteUser, List(id))
-    Success(
+    val rowsUpdated = Query.runUpdate(UserQueries.deleteUser, List(id, id, id))
+    if (rowsUpdated < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else Success(
       result = None,
       message = Some("User deleted.")
     )

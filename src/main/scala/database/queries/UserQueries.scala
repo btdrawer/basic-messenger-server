@@ -24,5 +24,7 @@ object UserQueries {
     "RETURNING id, username, status"
   def updateStatus: String = "UPDATE users SET status = ? WHERE id = ?"
 
-  def deleteUser: String = "DELETE FROM users WHERE id = ?"
+  def deleteUser: String = "DELETE FROM messages WHERE sender = ?;" +
+    "DELETE FROM server_users WHERE \"user\" = ?;" +
+    "DELETE FROM users WHERE id = ?;"
 }

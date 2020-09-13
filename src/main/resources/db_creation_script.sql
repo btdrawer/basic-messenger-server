@@ -51,7 +51,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.messages (
     id integer NOT NULL,
     server integer NOT NULL,
-    "user" integer NOT NULL,
+    sender integer NOT NULL,
     content text NOT NULL,
     "createdAt" timestamp without time zone NOT NULL
 );
@@ -328,7 +328,7 @@ ALTER TABLE ONLY public.server_users
 --
 
 ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT "user" FOREIGN KEY ("user") REFERENCES public.users(id);
+    ADD CONSTRAINT sender FOREIGN KEY (sender) REFERENCES public.users(id);
 
 --
 -- Add status and role resources
