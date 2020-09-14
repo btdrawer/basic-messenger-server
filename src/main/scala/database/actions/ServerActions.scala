@@ -92,11 +92,10 @@ object ServerActions extends Actions {
     )
 
   def getServerUser(serverId: Int, userId: Int)(implicit connection: Connection): ServerUserRole = {
-    val resultSet = runQuery(
+    val resultSet = runAndGetFirst(
       ServerQueries.getServerUser,
       List(serverId, userId)
     )
-    resultSet.first()
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else ServerUserRole(
       user = ChildUser(
@@ -131,7 +130,7 @@ object ServerActions extends Actions {
           username = resultSet.getString(4),
           status = Status.withName(resultSet.getString(5))
         ),
-        createdAt = resultSet.getDate(7).toInstant
+        createdAt = resultSet.getTimestamp(7)
       )
     )
 

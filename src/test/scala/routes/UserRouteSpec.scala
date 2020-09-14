@@ -25,7 +25,7 @@ class UserRouteSpec extends RouteSpec {
     }
   }
 
-  "The user endpoints" should {
+  "The user routes" should {
     // Create user
 
     "create a new user" in {

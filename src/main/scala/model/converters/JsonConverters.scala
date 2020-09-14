@@ -1,10 +1,11 @@
 package model.converters
 
-import java.time.Instant
+import java.sql.Timestamp
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import model._
 import spray.json._
+
+import model._
 
 /*
   EnumJsonConverter class
@@ -21,17 +22,17 @@ class EnumJsonConverter[T <: scala.Enumeration](enu: T) extends RootJsonFormat[T
   }
 }
 
-class InstantJsonConverter extends RootJsonFormat[Instant] {
-  override def write(v: Instant): JsValue = JsNumber(v.toEpochMilli)
+class TimestampJsonConverter extends RootJsonFormat[Timestamp] {
+  override def write(v: Timestamp): JsValue = JsNumber(v.getTime)
 
-  override def read(json: JsValue): Instant = json match {
-    case JsNumber(v) => Instant.ofEpochMilli(v.toLongExact)
+  override def read(json: JsValue): Timestamp = json match {
+    case JsNumber(v) => new Timestamp(v.toLongExact)
     case _ => throw DeserializationException("Serialization failed")
   }
 }
 
 trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val instantFormat: RootJsonFormat[Instant] = new InstantJsonConverter
+  implicit val timestampFormat: RootJsonFormat[Timestamp] = new TimestampJsonConverter
 
   // Enumeration
 

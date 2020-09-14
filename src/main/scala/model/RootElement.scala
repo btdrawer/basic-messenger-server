@@ -1,6 +1,6 @@
 package model
 
-import java.time.Instant
+import java.sql.Timestamp
 
 sealed trait RootElement
 
@@ -46,5 +46,5 @@ case class Message(
   content: String,
   server: ChildServer,
   sender: ServerUserRole,
-  createdAt: Instant
+  createdAt: Timestamp
 ) extends RootElement

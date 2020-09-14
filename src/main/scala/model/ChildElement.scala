@@ -1,6 +1,6 @@
 package model
 
-import java.time.Instant
+import java.sql.Timestamp
 
 sealed trait ChildElement
 
@@ -20,5 +20,5 @@ case class ChildMessage(
   id: Int,
   content: String,
   sender: ChildUser,
-  createdAt: Instant
+  createdAt: Timestamp
 ) extends ChildElement

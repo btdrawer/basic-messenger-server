@@ -36,7 +36,7 @@ class ServerRouteSpec extends RouteSpec {
     message = None
   )
 
-  "The server endpoints" should {
+  "The server routes" should {
     "create a new server" in {
       val params = CreatableServer(
         name = "New server",

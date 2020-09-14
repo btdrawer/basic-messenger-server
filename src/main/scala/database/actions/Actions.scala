@@ -16,7 +16,9 @@ trait Actions extends JsonConverters with UpdatableConverters {
       ResultSet.TYPE_SCROLL_SENSITIVE,
       ResultSet.CONCUR_READ_ONLY
     )
-    (1 to parameters.length).foreach(i => statement.setObject(i, parameters(i - 1)))
+    (1 to parameters.length).foreach(
+      i => statement.setObject(i, parameters(i - 1))
+    )
     statement
   }
 

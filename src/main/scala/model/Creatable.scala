@@ -1,6 +1,6 @@
 package model
 
-import java.time.Instant
+import java.sql.Timestamp
 
 sealed trait Creatable
 
@@ -22,5 +22,5 @@ case class CreatableMessage(
   content: String,
   sender: Int,
   server: Int,
-  createdAt: Instant
+  createdAt: Timestamp
 ) extends Creatable

@@ -15,7 +15,7 @@ object MessageActions extends Actions {
         message.content,
         message.sender,
         message.server,
-        message.createdAt.toString
+        message.createdAt
       )
     )
     if (resultSet.getRow <= 0) throw ApiException(FailureMessages.GENERIC)
@@ -29,7 +29,7 @@ object MessageActions extends Actions {
           createdAt = message.createdAt
         )
       ),
-      message = None
+      message = Some("Message sent.")
     )
   }
 }
