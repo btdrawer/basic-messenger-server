@@ -54,4 +54,11 @@ object ServerQueries {
       |DELETE FROM server_users
       | WHERE server = ? AND "user" = ?
       |""".stripMargin
+
+  def deleteServer: String =
+    """
+      |DELETE FROM messages WHERE server = ?;
+      |DELETE FROM server_users WHERE server = ?;
+      |DELETE FROM servers WHERE id = ?
+      |""".stripMargin
 }

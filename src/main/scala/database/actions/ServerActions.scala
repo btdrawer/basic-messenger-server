@@ -169,4 +169,14 @@ object ServerActions extends Actions {
         message = Some("User removed from server.")
       )
     }
+
+  def deleteServer(id: Int)(implicit connection: Connection): Result[NoRootElement] =
+    if (!serverIdExists(id)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    else {
+      runUpdate(ServerQueries.deleteServer, List(id, id, id))
+      Success(
+        result = None,
+        message = Some("Server deleted.")
+      )
+    }
 }

@@ -209,5 +209,24 @@ class ServerRouteSpec extends RouteSpec {
         )
       }
     }
+
+    "delete server" in {
+      Delete("/servers/1") ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("Server deleted.")
+        )
+      }
+    }
+
+    "not delete server if it doesn't exist" in {
+      Delete("/servers/30") ~!> routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[Result[NoRootElement]] shouldEqual Failure(
+          "Server not found."
+        )
+      }
+    }
   }
 }

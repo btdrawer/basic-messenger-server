@@ -61,7 +61,7 @@ object ServerRoutes extends JsonConverters {
         },
         delete {
           path(Segment) { id =>
-            val result: Future[Result[NoRootElement]] = Future(UserActions.deleteUser(id.toInt))
+            val result: Future[Result[NoRootElement]] = Future(ServerActions.deleteServer(id.toInt))
             onComplete(result)(complete(_))
           }
         },
