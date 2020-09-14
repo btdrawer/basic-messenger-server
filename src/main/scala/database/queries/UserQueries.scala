@@ -39,7 +39,7 @@ object UserQueries {
       |   status = COALESCE(?, status),
       |   password_reset_question = COALESCE(?, password_reset_question),
       |   password_reset_answer = COALESCE(?, password_reset_answer)
-      |WHERE id = ?
+      | WHERE id = ?
       |""".stripMargin
 
   def deleteUser: String = "DELETE FROM messages WHERE sender = ?;" +

@@ -1,10 +1,12 @@
-package model
+package model.converters
 
 import java.sql.Connection
 
 import database.actions.UserActions.{checkPasswordIsValid, usernameExists}
+import model.{ApiException, FailureMessages, UpdatableUser}
 
 trait UpdatableConverters {
+
   trait UpdatableConverter[A] {
     def convert(value: A)(implicit connection: Connection): List[Any]
   }
@@ -43,4 +45,5 @@ trait UpdatableConverters {
       )
     }
   }
+
 }

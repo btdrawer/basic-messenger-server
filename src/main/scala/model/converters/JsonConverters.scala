@@ -1,8 +1,9 @@
-package model
+package model.converters
 
 import java.time.Instant
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import model._
 import spray.json._
 
 /*

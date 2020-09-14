@@ -2,7 +2,7 @@ package database.actions
 
 import java.sql.{Connection, PreparedStatement, ResultSet}
 
-import model.{JsonConverters, UpdatableConverters}
+import model.converters.{JsonConverters, UpdatableConverters}
 
 import scala.annotation.tailrec
 

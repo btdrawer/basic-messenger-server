@@ -4,10 +4,10 @@ import java.sql.Connection
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import model.converters.JsonConverters
 
 import scala.concurrent.{ExecutionContext, Future}
-
-import model.{JsonConverters, _}
+import model._
 import database.actions.UserActions
 
 object UserRoutes extends JsonConverters {

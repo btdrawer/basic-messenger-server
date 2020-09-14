@@ -94,6 +94,14 @@ class UserRouteSpec extends RouteSpec {
                     address = "exampleserver"
                   ),
                   role = Role.withName("ADMIN")
+                ),
+                UserServerRole(
+                  server = ChildServer(
+                    id = 2,
+                    name = "Second Server",
+                    address = "server2"
+                  ),
+                  role = Role.withName("ADMIN")
                 )
               ),
               status = Status.withName("OFFLINE")

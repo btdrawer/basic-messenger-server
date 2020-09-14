@@ -8,9 +8,8 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.BeforeAndAfterEach
-
 import app.App
-import model.JsonConverters
+import model.converters.JsonConverters
 
 import scala.io.Source
 
