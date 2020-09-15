@@ -16,7 +16,7 @@ class ServerRouteSpec extends RouteSpec {
           ServerUserRole(
             user = ChildUser(
               id = 1,
-              username = "ben",
+              username = "admin",
               status = Status.withName("OFFLINE")
             ),
             role = Role.withName("ADMIN")
@@ -24,7 +24,15 @@ class ServerRouteSpec extends RouteSpec {
           ServerUserRole(
             user = ChildUser(
               id = 2,
-              username = "ben2",
+              username = "moderator",
+              status = Status.withName("OFFLINE")
+            ),
+            role = Role.withName("MODERATOR")
+          ),
+          ServerUserRole(
+            user = ChildUser(
+              id = 3,
+              username = "member",
               status = Status.withName("OFFLINE")
             ),
             role = Role.withName("MEMBER")
@@ -40,11 +48,10 @@ class ServerRouteSpec extends RouteSpec {
     "create a new server" in {
       val params = CreatableServer(
         name = "New server",
-        address = "newserver",
-        creator = 1
+        address = "newserver"
       ).toJson.toString
       val request = this.createPostRoute("/servers", params)
-      request ~!> routes ~> check {
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[Server]]
         val createdServer = res.result.get
@@ -59,11 +66,10 @@ class ServerRouteSpec extends RouteSpec {
     "not create a new server if the address has already been taken" in {
       val params = CreatableServer(
         name = "New server",
-        address = "exampleserver",
-        creator = 1
+        address = "exampleserver"
       ).toJson.toString
       val request = this.createPostRoute("/servers", params)
-      request ~!> routes ~> check {
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.BadRequest
         responseAs[Result[Server]] shouldEqual Failure(
           "That server address is already taken."
@@ -117,7 +123,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "add a new member to a server" in {
-      Put("/servers/2/users/2") ~!> routes ~> check {
+      Put("/servers/2/users/2") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[NoRootElement]] shouldEqual Success(
           result = None,
@@ -127,7 +133,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "not add a new member if server does not exist" in {
-      Put("/servers/30/users/2") ~!> routes ~> check {
+      Put("/servers/30/users/2") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "Server not found."
@@ -136,7 +142,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "not add a new member if member does not exist" in {
-      Put("/servers/2/users/30") ~!> routes ~> check {
+      Put("/servers/2/users/30") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "User not found."
@@ -144,8 +150,17 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
+    "not add a new member if a member" in {
+      Put("/servers/1/users/4") ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
     "update user role to MODERATOR" in {
-      Put("/servers/2/users/2/roles/MODERATOR") ~!> routes ~> check {
+      Put("/servers/2/users/2/roles/MODERATOR") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[NoRootElement]] shouldEqual Success(
           result = None,
@@ -155,7 +170,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "update user role to ADMIN" in {
-      Put("/servers/2/users/2/roles/ADMIN") ~!> routes ~> check {
+      Put("/servers/2/users/2/roles/ADMIN") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[NoRootElement]] shouldEqual Success(
           result = None,
@@ -165,7 +180,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "not update user role if server does not exist" in {
-      Put("/servers/30/users/2/roles/MODERATOR") ~!> routes ~> check {
+      Put("/servers/30/users/2/roles/MODERATOR") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "Server not found."
@@ -174,7 +189,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "not update user role if user does not exist" in {
-      Put("/servers/2/users/30/roles/MODERATOR") ~!> routes ~> check {
+      Put("/servers/2/users/30/roles/MODERATOR") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "User not found."
@@ -182,8 +197,26 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
+    "not update user role if moderator" in {
+      Put("/servers/1/users/3/roles/ADMIN") ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
+    "not update user role if member" in {
+      Put("/servers/1/users/2/roles/ADMIN") ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
     "remove user from server" in {
-      Delete("/servers/1/users/2") ~!> routes ~> check {
+      Delete("/servers/1/users/2") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[NoRootElement]] shouldEqual Success(
           result = None,
@@ -192,8 +225,17 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
+    "not remove user from server if not a moderator" in {
+      Delete("/servers/1/users/2") ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
     "return error if server does not exist" in {
-      Delete("/servers/30/users/1") ~!> routes ~> check {
+      Delete("/servers/30/users/1") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "Server not found."
@@ -202,7 +244,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "return error if user does not exist" in {
-      Delete("/servers/2/users/30") ~!> routes ~> check {
+      Delete("/servers/2/users/30") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[Server]] shouldEqual Failure(
           "User not found."
@@ -211,7 +253,7 @@ class ServerRouteSpec extends RouteSpec {
     }
 
     "delete server" in {
-      Delete("/servers/1") ~!> routes ~> check {
+      Delete("/servers/1") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[NoRootElement]] shouldEqual Success(
           result = None,
@@ -220,8 +262,26 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
+    "not delete server if moderator" in {
+      Delete("/servers/1") ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
+    "not delete server if member" in {
+      Delete("/servers/1") ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[Server]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
     "not delete server if it doesn't exist" in {
-      Delete("/servers/30") ~!> routes ~> check {
+      Delete("/servers/30") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.NotFound
         responseAs[Result[NoRootElement]] shouldEqual Failure(
           "Server not found."

@@ -13,11 +13,10 @@ class MessageRouteSpec extends RouteSpec {
       val params = CreatableMessage(
         content = "Hello world",
         server = 1,
-        sender = 1,
         createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
-      request ~!> routes ~> check {
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         val res = responseAs[Result[Message]]
         val message = res.result.get
         message.content shouldEqual "Hello world"
@@ -27,30 +26,14 @@ class MessageRouteSpec extends RouteSpec {
       }
     }
 
-    "return error if user not found" in {
-      val params = CreatableMessage(
-        content = "Hello world",
-        server = 1,
-        sender = 30,
-        createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
-      ).toJson.toString
-      val request = this.createPostRoute("/messages", params)
-      request ~!> routes ~> check {
-        responseAs[Result[Message]] shouldEqual Failure(
-          "User not found."
-        )
-      }
-    }
-
     "return error if server not found" in {
       val params = CreatableMessage(
         content = "Hello world",
         server = 30,
-        sender = 1,
         createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
-      request ~!> routes ~> check {
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         responseAs[Result[Message]] shouldEqual Failure(
           "Server not found."
         )
@@ -61,11 +44,10 @@ class MessageRouteSpec extends RouteSpec {
       val params = CreatableMessage(
         content = "Hello world",
         server = 2,
-        sender = 2,
         createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
-      request ~!> routes ~> check {
+      request ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
         responseAs[Result[Message]] shouldEqual Failure(
           "User not found."
         )

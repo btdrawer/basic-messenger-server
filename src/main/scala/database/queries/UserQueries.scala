@@ -11,7 +11,8 @@ object UserQueries {
       |""".stripMargin
 
   def getUser: String = "SELECT username, status FROM \"users\" WHERE id = ?"
-  def getUserId: String = "SELECT id FROM user WHERE username = ?"
+  def getUserId: String = "SELECT id FROM \"users\" WHERE username = ?"
+  def getAuthData: String = "SELECT id, password FROM \"users\" WHERE username = ?"
 
   def getUserServers: String =
     """

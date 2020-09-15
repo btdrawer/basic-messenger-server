@@ -6,6 +6,19 @@ import model._
 import database.queries.UserQueries
 
 object UserActions extends Actions {
+  sealed case class AuthData(id: Int, password: String)
+
+  def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
+    val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
+    if (resultSet.getRow < 1) throw ApiException(FailureMessages.LOGIN_INCORRECT)
+    else Some(
+      AuthData(
+        id = resultSet.getInt(1),
+        password = resultSet.getString(2)
+      )
+    )
+  }
+
   def usernameExists(username: String)(implicit connection: Connection): Boolean = {
     val resultSet = runAndGetFirst(UserQueries.checkUsernameExists, List(username))
     resultSet.getRow > 0

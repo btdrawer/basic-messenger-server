@@ -41,8 +41,8 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
 
   // Creatable
 
-  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat4(CreatableMessage)
-  implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat3(CreatableServer)
+  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat3(CreatableMessage)
+  implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat2(CreatableServer)
   implicit val creatablePasswordResetFormat: RootJsonFormat[CreatablePasswordReset] =
     jsonFormat2(CreatablePasswordReset)
   implicit val creatableUserFormat: RootJsonFormat[CreatableUser] = jsonFormat3(CreatableUser)

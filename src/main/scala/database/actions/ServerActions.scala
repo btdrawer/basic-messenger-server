@@ -16,13 +16,13 @@ object ServerActions extends Actions {
     resultSet.getRow > 0
   }
 
-  def createServer(server: CreatableServer)(implicit connection: Connection): Result[Server] =
+  def createServer(server: CreatableServer, creator: Int)(implicit connection: Connection): Result[Server] =
     if (addressExists(server.address)) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
     else {
       val resultSet = runAndGetFirst(ServerQueries.createServer, List(server.name, server.address))
       val id = resultSet.getInt(1)
-      addServerUser(id, server.creator, Role.ADMIN)
-        val serverUser = getServerUser(id, server.creator)
+      addServerUser(id, creator, Role.ADMIN)
+        val serverUser = getServerUser(id, creator)
         Success(
           result = Some(
             Server(

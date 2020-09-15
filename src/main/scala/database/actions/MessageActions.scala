@@ -6,14 +6,14 @@ import model._
 import database.queries.MessageQueries
 
 object MessageActions extends Actions {
-  def createMessage(message: CreatableMessage)(implicit connection: Connection): Result[Message] = {
+  def createMessage(message: CreatableMessage, sender: Int)(implicit connection: Connection): Result[Message] = {
     val server = ServerActions.getServerAsChildElement(message.server)
-    val sender = ServerActions.getServerUser(message.server, message.sender)
+    val senderDetails = ServerActions.getServerUser(message.server, sender)
     val resultSet = runAndGetFirst(
       MessageQueries.createMessage,
       List(
         message.content,
-        message.sender,
+        sender,
         message.server,
         message.createdAt
       )
@@ -25,7 +25,7 @@ object MessageActions extends Actions {
           id = resultSet.getInt(1),
           content = message.content,
           server,
-          sender,
+          sender = senderDetails,
           createdAt = message.createdAt
         )
       ),

@@ -49,4 +49,14 @@ object FailureMessages {
     message = "User not found.",
     statusCode = StatusCodes.NotFound
   )
+  final def LOGIN_INCORRECT: FailureMessage = FailureMessage(
+    code = "LOGIN_INCORRECT",
+    message = "Your username or password were incorrect.",
+    statusCode = StatusCodes.Forbidden
+  )
+  final def INSUFFICIENT_PERMISSIONS: FailureMessage = FailureMessage(
+    code = "INSUFFICIENT_PERMISSIONS",
+    message = "You do not have sufficient permission to complete this action.",
+    statusCode = StatusCodes.Forbidden
+  )
 }

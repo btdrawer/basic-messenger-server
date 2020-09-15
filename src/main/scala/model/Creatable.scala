@@ -7,7 +7,6 @@ sealed trait Creatable
 case class CreatableServer(
   name: String,
   address: String,
-  creator: Int
 ) extends Creatable
 
 case class CreatableUser(
@@ -20,7 +19,6 @@ case class CreatablePasswordReset(question: Int, answer: String) extends Creatab
 
 case class CreatableMessage(
   content: String,
-  sender: Int,
   server: Int,
   createdAt: Timestamp
 ) extends Creatable

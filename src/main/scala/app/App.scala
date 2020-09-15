@@ -37,9 +37,9 @@ object App extends Directives with JsonConverters {
 
   def routes: Route = handleExceptions(exceptionHandler) {
     concat(
-      ServerRoutes(),
-      UserRoutes(),
-      MessageRoutes()
+      ServerRoutes().routes,
+      UserRoutes().routes,
+      MessageRoutes().routes
     )
   }
 

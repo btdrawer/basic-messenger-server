@@ -4,21 +4,23 @@ import java.sql.Connection
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import model.converters.JsonConverters
-import database.actions.{ServerActions, UserActions}
+
 import model._
+import database.actions.ServerActions
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ServerRoutes extends JsonConverters {
-  def apply()(implicit connection: Connection, executionContext: ExecutionContext): Route =
+case class ServerRoutes()(implicit connection: Connection, executionContext: ExecutionContext) extends Routes {
+  def routes: Route =
     pathPrefix("servers") {
       concat(
         post {
-          decodeRequest {
-            entity(as[CreatableServer]) { server =>
-              val result: Future[Result[Server]] = Future(ServerActions.createServer(server))
-              onComplete(result)(complete(_))
+          authenticateUser { id =>
+            decodeRequest {
+              entity(as[CreatableServer]) { server =>
+                val result: Future[Result[Server]] = Future(ServerActions.createServer(server, id))
+                onComplete(result)(complete(_))
+              }
             }
           }
         },
@@ -47,31 +49,40 @@ object ServerRoutes extends JsonConverters {
         },
         put {
           path(Segment / "users" / Segment) { (server, user) =>
-            val result: Future[Result[NoRootElement]] =
-              Future(ServerActions.addServerUser(server.toInt, user.toInt))
-            onComplete(result)(complete(_))
+            authenticateModerator(server) { _ =>
+              val result: Future[Result[NoRootElement]] =
+                Future(ServerActions.addServerUser(server.toInt, user.toInt))
+              onComplete(result)(complete(_))
+            }
           }
         },
         put {
           path(Segment / "users" / Segment / "roles" / Segment) { (server, member, role) =>
-            val result: Future[Result[NoRootElement]] =
-              Future(ServerActions.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
-            onComplete(result)(complete(_))
+            authenticateAdmin(server) { _ =>
+              val result: Future[Result[NoRootElement]] =
+                Future(ServerActions.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
+              onComplete(result)(complete(_))
+            }
           }
         },
         delete {
           path(Segment) { id =>
-            val result: Future[Result[NoRootElement]] = Future(ServerActions.deleteServer(id.toInt))
-            onComplete(result)(complete(_))
+            authenticateAdmin(id) { _ =>
+              val result: Future[Result[NoRootElement]] = Future(ServerActions.deleteServer(id.toInt))
+              onComplete(result)(complete(_))
+            }
           }
         },
         delete {
           path(Segment / "users" / Segment) { (server, user) =>
-            val result: Future[Result[NoRootElement]] =
-              Future(ServerActions.removeServerUser(server.toInt, user.toInt))
-            onComplete(result)(complete(_))
+            authenticateModerator(server) { _ =>
+              val result: Future[Result[NoRootElement]] =
+                Future(ServerActions.removeServerUser(server.toInt, user.toInt))
+              onComplete(result)(complete(_))
+            }
           }
         },
       )
+    }
   }
-}
+

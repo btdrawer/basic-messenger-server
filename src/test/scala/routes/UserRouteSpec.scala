@@ -60,7 +60,7 @@ class UserRouteSpec extends RouteSpec {
 
     "not create a new user if the username has already been taken" in {
       val params = CreatableUser(
-        username = "ben",
+        username = "admin",
         password = "Password222",
         passwordReset = CreatablePasswordReset(
           question = 1,
@@ -85,7 +85,7 @@ class UserRouteSpec extends RouteSpec {
           result = Some(
             User(
               id = 1,
-              username = "ben",
+              username = "admin",
               servers = List(
                 UserServerRole(
                   server = ChildServer(
@@ -130,8 +130,8 @@ class UserRouteSpec extends RouteSpec {
         status = None,
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[User]]
         val user = res.result.get
@@ -143,13 +143,13 @@ class UserRouteSpec extends RouteSpec {
 
     "not update a username if it is already taken" in {
       val params = UpdatableUser(
-        username = Some("ben"),
+        username = Some("admin"),
         password = None,
         status = None,
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.BadRequest
         responseAs[Result[User]] shouldEqual Failure(
           "A user with that username already exists."
@@ -164,8 +164,8 @@ class UserRouteSpec extends RouteSpec {
         status = None,
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[User]]
         res.message shouldEqual Some("User updated successfully.")
@@ -179,8 +179,8 @@ class UserRouteSpec extends RouteSpec {
         status = None,
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.BadRequest
         responseAs[Result[User]] shouldEqual Failure(
           "Your password must be at least 8 characters and contain " +
@@ -196,8 +196,8 @@ class UserRouteSpec extends RouteSpec {
         status = Some(Status.ONLINE),
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[User]]
         res.result.get.status shouldEqual Status.ONLINE
@@ -217,8 +217,8 @@ class UserRouteSpec extends RouteSpec {
           )
         )
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[User]]
         res.message shouldEqual Some("User updated successfully.")
@@ -237,8 +237,8 @@ class UserRouteSpec extends RouteSpec {
           )
         )
       ).toJson.toString
-      val request = this.createPutRoute("/users/1", params)
-      request ~!> routes ~> check {
+      val request = this.createPutRoute("/users", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         val res = responseAs[Result[User]]
         val user = res.result.get
@@ -249,17 +249,18 @@ class UserRouteSpec extends RouteSpec {
       }
     }
 
-    "not update user if not found" in {
+    "not update user if not logged in" in {
       val params = UpdatableUser(
         username = Some("newben2"),
         password = None,
         status = None,
         passwordReset = None
       ).toJson.toString
-      val request = this.createPutRoute("/users/30", params)
+      val request = this.createPutRoute("/users", params)
       request ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
         responseAs[Result[User]] shouldEqual Failure(
-          "User not found."
+          "Your username or password were incorrect."
         )
       }
     }
@@ -267,7 +268,7 @@ class UserRouteSpec extends RouteSpec {
     // Delete user
 
     "delete a user" in {
-      Delete("/users/1") ~!> routes ~> check {
+      Delete("/users") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Result[User]] shouldEqual Success(
           result = None,
@@ -276,11 +277,11 @@ class UserRouteSpec extends RouteSpec {
       }
     }
 
-    "not delete a user if not found" in {
-      Delete("/users/30") ~!> routes ~> check {
-        status shouldEqual StatusCodes.NotFound
+    "return error if not logged in" in {
+      Delete("/users") ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
         responseAs[Result[User]] shouldEqual Failure(
-          "User not found."
+          "Your username or password were incorrect."
         )
       }
     }
