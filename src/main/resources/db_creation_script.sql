@@ -342,7 +342,6 @@ INSERT INTO public.roles (id, name)
 
 
 -- Completed on 2020-09-12 22:06:46 BST
-
 --
 -- PostgreSQL database dump complete
 --

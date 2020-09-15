@@ -4,9 +4,10 @@ import java.sql.Connection
 
 import model._
 import database.queries.UserQueries
+import authentication.HashPassword
 
 object UserActions extends Actions {
-  sealed case class AuthData(id: Int, password: String)
+  sealed case class AuthData(id: Int, password: String, salt: String)
 
   def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
     val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
@@ -14,7 +15,8 @@ object UserActions extends Actions {
     else Some(
       AuthData(
         id = resultSet.getInt(1),
-        password = resultSet.getString(2)
+        password = resultSet.getString(2),
+        salt = resultSet.getString(3)
       )
     )
   }
@@ -41,11 +43,13 @@ object UserActions extends Actions {
     else if (usernameExists(user.username))
       throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
+      val hashedPassword = HashPassword(user.password)
       val resultSet = runAndGetFirst(
         UserQueries.createUser,
         List(
           user.username,
-          user.password,
+          hashedPassword.password,
+          hashedPassword.salt,
           user.passwordReset.question,
           user.passwordReset.answer
         )

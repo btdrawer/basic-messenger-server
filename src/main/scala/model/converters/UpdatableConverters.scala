@@ -2,6 +2,7 @@ package model.converters
 
 import java.sql.Connection
 
+import authentication.HashPassword
 import database.actions.UserActions.{checkPasswordIsValid, usernameExists}
 import model.{ApiException, FailureMessages, UpdatableUser}
 
@@ -22,10 +23,12 @@ trait UpdatableConverters {
         if (usernameExists(u)) throw ApiException(FailureMessages.USERNAME_EXISTS)
         else Some(u)
       ).orNull
-      val password = user.password.flatMap(p =>
+      val hashedPassword = user.password.flatMap(p =>
         if (!checkPasswordIsValid(p)) throw ApiException(FailureMessages.PASSWORD_INVALID)
-        else Some(p)
-      ).orNull
+        else Some(HashPassword(p))
+      )
+      val password = hashedPassword.flatMap(p => Some(p.password)).orNull
+      val salt = hashedPassword.flatMap(p => Some(p.salt)).orNull
       val status = user.status.flatMap(
         s => Some(s.toString)
       ).orNull
@@ -39,11 +42,11 @@ trait UpdatableConverters {
       List(
         username,
         password,
+        salt,
         status,
         passwordResetQuestion,
         passwordResetAnswer
       )
     }
   }
-
 }

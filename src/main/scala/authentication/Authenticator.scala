@@ -15,7 +15,7 @@ object BasicAuthenticator {
     val authData = UserActions.getAuthData(username)
     authData match {
       case Some(d) =>
-        if (p.verify(d.password)) Some(d.id)
+        if (p.verify(d.password, HashPassword.verify(d.salt))) Some(d.id)
         else throw ApiException(FailureMessages.LOGIN_INCORRECT)
       case _ => throw ApiException(FailureMessages.LOGIN_INCORRECT)
     }

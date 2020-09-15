@@ -5,14 +5,14 @@ object UserQueries {
 
   def createUser: String =
     """
-      |INSERT INTO users (username, password, status, password_reset_question, password_reset_answer)
-      | VALUES (?, ?, 'OFFLINE', ?, ?)
+      |INSERT INTO users (username, password, salt, status, password_reset_question, password_reset_answer)
+      | VALUES (?, ?, ?, 'OFFLINE', ?, ?)
       | RETURNING id, username, status
       |""".stripMargin
 
   def getUser: String = "SELECT username, status FROM \"users\" WHERE id = ?"
   def getUserId: String = "SELECT id FROM \"users\" WHERE username = ?"
-  def getAuthData: String = "SELECT id, password FROM \"users\" WHERE username = ?"
+  def getAuthData: String = "SELECT id, password, salt FROM \"users\" WHERE username = ?"
 
   def getUserServers: String =
     """
@@ -37,6 +37,7 @@ object UserQueries {
       |UPDATE users
       | SET username = COALESCE(?, username),
       |   password = COALESCE(?, password),
+      |   salt = COALESCE(?, salt),
       |   status = COALESCE(?, status),
       |   password_reset_question = COALESCE(?, password_reset_question),
       |   password_reset_answer = COALESCE(?, password_reset_answer)

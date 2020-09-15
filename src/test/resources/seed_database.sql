@@ -14,14 +14,14 @@ INSERT INTO statuses (id, name)
 
 INSERT INTO password_reset_questions (id, question) VALUES (1, 'Example question');
 
-INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
-    VALUES (1, 'admin', 'Password222', 'OFFLINE', 1, 'Hello');
-INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
-    VALUES (2, 'moderator', 'Password223', 'OFFLINE', 1, 'Hello');
-INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
-    VALUES (3, 'member', 'Password224', 'OFFLINE', 1, 'Hello');
-INSERT INTO users (id, username, password, status, password_reset_question, password_reset_answer)
-    VALUES (4, 'extramember', 'Password225', 'OFFLINE', 1, 'Hello');
+INSERT INTO users (id, username, password, salt, status, password_reset_question, password_reset_answer)
+    VALUES (1, 'admin', ?, ?, 'OFFLINE', 1, 'Hello');
+INSERT INTO users (id, username, password, salt, status, password_reset_question, password_reset_answer)
+    VALUES (2, 'moderator', ?, ?, 'OFFLINE', 1, 'Hello');
+INSERT INTO users (id, username, password, salt, status, password_reset_question, password_reset_answer)
+    VALUES (3, 'member', ?, ?, 'OFFLINE', 1, 'Hello');
+INSERT INTO users (id, username, password, salt, status, password_reset_question, password_reset_answer)
+    VALUES (4, 'extramember', ?, ?, 'OFFLINE', 1, 'Hello');
 
 INSERT INTO servers (id, name, address) VALUES (1, 'Example Server', 'exampleserver');
 INSERT INTO servers (id, name, address) VALUES (2, 'Second Server', 'server2');

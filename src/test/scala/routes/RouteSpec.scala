@@ -2,8 +2,8 @@ package routes
 
 import java.sql.Connection
 
-import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials}
-import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpHeader, HttpRequest, MediaTypes}
+import akka.http.scaladsl.model.headers.BasicHttpCredentials
+import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpRequest, MediaTypes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
@@ -11,6 +11,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.BeforeAndAfterEach
 
 import app.App
+import authentication.HashPassword
 import model.converters.JsonConverters
 
 import scala.io.Source
@@ -32,6 +33,10 @@ class RouteSpec extends AnyWordSpec
 
   def createPutRoute(route: String, params: String): HttpRequest =
     createRoute(requestBuilder = Put, route, params)
+}
+
+trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
+  implicit def connection: Connection = App.connection
 
   def testLogins: Map[String, BasicHttpCredentials] = Map[String, BasicHttpCredentials](
     "admin" -> BasicHttpCredentials("admin", "Password222"),
@@ -39,15 +44,17 @@ class RouteSpec extends AnyWordSpec
     "member" -> BasicHttpCredentials("member", "Password224"),
     "extramember" -> BasicHttpCredentials("extramember", "Password225")
   )
-}
-
-trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
-  implicit def connection: Connection = App.connection
 
   override protected def beforeEach(): Unit = {
     val sqlScript = Source.fromResource("seed_database.sql")
     val sqlScriptString = sqlScript.mkString
     val statement = connection.prepareStatement(sqlScriptString)
+    val passwords = testLogins.map(elem => HashPassword(elem._2.password)).toList
+    (1 to passwords.length).foreach(i => {
+      val index = i * 2
+      statement.setString(index - 1, passwords(i - 1).password)
+      statement.setString(index, passwords(i - 1).salt)
+    })
     statement.executeUpdate()
     sqlScript.close()
   }
