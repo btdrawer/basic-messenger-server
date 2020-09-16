@@ -8,6 +8,8 @@ import akka.http.scaladsl.server.directives.Credentials._
 import database.actions.{ServerActions, UserActions}
 import model.{ApiException, FailureMessages, Role}
 
+case class AuthData(id: Int, password: String, salt: String)
+
 object BasicAuthenticator {
   private def verify(p: Provided, username: String)(implicit connection: Connection): Option[Int] = {
     val authData = UserActions.getAuthData(username)

@@ -4,11 +4,9 @@ import java.sql.Connection
 
 import model._
 import database.queries.UserQueries
-import authentication.HashPassword
+import authentication.{AuthData, HashPassword}
 
 object UserActions extends Actions {
-  sealed case class AuthData(id: Int, password: String, salt: String)
-
   def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
     val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.LOGIN_INCORRECT)
