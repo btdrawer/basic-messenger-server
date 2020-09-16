@@ -44,7 +44,15 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
         },
         put {
           path(Segment) { id =>
-            ???
+            authenticateAdmin(id) { _ =>
+              decodeRequest {
+                entity(as[UpdatableServer]) { server =>
+                  val result: Future[Result[NoRootElement]] =
+                    Future(ServerActions.updateServer(id.toInt, server))
+                  onComplete(result)(complete(_))
+                }
+              }
+            }
           }
         },
         put {

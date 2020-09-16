@@ -69,6 +69,7 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
   // Updatable
 
   implicit val updatableUserFormat: RootJsonFormat[UpdatableUser] = jsonFormat4(UpdatableUser)
+  implicit val updatableServerFormat: RootJsonFormat[UpdatableServer] = jsonFormat1(UpdatableServer)
 
   // Result
 

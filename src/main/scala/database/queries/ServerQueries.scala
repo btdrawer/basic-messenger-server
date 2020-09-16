@@ -38,6 +38,13 @@ object ServerQueries {
       | LIMIT ? OFFSET ?
       |""".stripMargin
 
+  def updateServer: String =
+    """
+      |UPDATE servers
+      | SET name = ?
+      | WHERE id = ?
+      |""".stripMargin
+
   def addServerUser: String =
     """
       |INSERT INTO server_users (server, "user", role)

@@ -29,9 +29,6 @@ object UserQueries {
       | WHERE servers.id = ?
       |""".stripMargin
 
-  def updateUsername: String = "UPDATE users SET username = ? WHERE id = ?"
-  def updateStatus: String = "UPDATE users SET status = ? WHERE id = ?"
-
   def updateUser: String =
     """
       |UPDATE users

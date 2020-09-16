@@ -122,6 +122,46 @@ class ServerRouteSpec extends RouteSpec {
       }
     }
 
+    "update server if admin" in {
+      val params = UpdatableServer(
+        name = Some("Updated name")
+      ).toJson.toString
+      val request = this.createPutRoute("/servers/1", params)
+      request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Result[NoRootElement]] shouldEqual Success(
+          result = None,
+          message = Some("Server updated.")
+        )
+      }
+    }
+
+    "not update server if moderator" in {
+      val params = UpdatableServer(
+        name = Some("Updated name")
+      ).toJson.toString
+      val request = this.createPutRoute("/servers/1", params)
+      request ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[NoRootElement]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
+    "not update server if member" in {
+      val params = UpdatableServer(
+        name = Some("Updated name")
+      ).toJson.toString
+      val request = this.createPutRoute("/servers/1", params)
+      request ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        responseAs[Result[NoRootElement]] shouldEqual Failure(
+          "You do not have sufficient permission to complete this action."
+        )
+      }
+    }
+
     "add a new member to a server" in {
       Put("/servers/2/users/2") ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
         status shouldEqual StatusCodes.OK

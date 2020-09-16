@@ -4,7 +4,7 @@ import java.sql.Connection
 
 import authentication.HashPassword
 import database.actions.UserActions.{checkPasswordIsValid, usernameExists}
-import model.{ApiException, FailureMessages, UpdatableUser}
+import model.{ApiException, FailureMessages, UpdatableServer, UpdatableUser}
 
 trait UpdatableConverters {
 
@@ -15,6 +15,13 @@ trait UpdatableConverters {
   implicit class ToParameterList[A](value: A) {
     def toParameterList(implicit converter: UpdatableConverter[A], connection: Connection): List[Any] =
       converter convert value
+  }
+
+  implicit object UpdatableServerConverter extends UpdatableConverter[UpdatableServer] {
+    override def convert(server: UpdatableServer)(implicit connection: Connection): List[Any] =
+      List(
+        server.name.orNull
+      )
   }
 
   implicit object UpdatableUserConverter extends UpdatableConverter[UpdatableUser] {

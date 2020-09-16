@@ -109,26 +109,6 @@ object UserActions extends Actions {
     )
   }
 
-  def updateUsername(id: Int, username: String)(implicit connection: Connection): Result[User] = {
-    if (usernameExists(username))
-      throw ApiException(FailureMessages.USERNAME_EXISTS)
-    else {
-      runUpdate(UserQueries.updateUsername, List(username, id))
-      Success(
-        result = None,
-        message = Some("Your username has been updated.")
-      )
-    }
-  }
-
-  def updateStatus(id: Int, status: Status.Value)(implicit connection: Connection): Result[User] = {
-    runUpdate(UserQueries.updateUsername, List(status.toString, id))
-    Success(
-      result = None,
-      message = Some("Your status has been updated.")
-    )
-  }
-
   def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] =
     if (!userIdExists(id)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
