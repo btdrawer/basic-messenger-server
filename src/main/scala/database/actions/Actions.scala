@@ -28,8 +28,7 @@ trait Actions extends JsonConverters with UpdatableConverters {
   }
 
   def runAndGetFirst(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
-    val statement = prepareStatement(query, parameters)
-    val resultSet = statement.executeQuery()
+    val resultSet = runQuery(query, parameters)
     resultSet.first()
     resultSet
   }

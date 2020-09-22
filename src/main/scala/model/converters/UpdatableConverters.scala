@@ -7,7 +7,6 @@ import database.actions.UserActions.{checkPasswordIsValid, usernameExists}
 import model.{ApiException, FailureMessages, UpdatableServer, UpdatableUser}
 
 trait UpdatableConverters {
-
   trait UpdatableConverter[A] {
     def convert(value: A)(implicit connection: Connection): List[Any]
   }
