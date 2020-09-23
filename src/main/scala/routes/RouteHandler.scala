@@ -12,11 +12,14 @@ import model.converters.JsonConverters
 
 import scala.concurrent.ExecutionContext
 
-abstract class Routes(implicit connection: Connection, executionContext: ExecutionContext) extends JsonConverters {
+abstract class RouteHandler(implicit connection: Connection, executionContext: ExecutionContext)
+  extends JsonConverters {
   def routes: Route
 
+  final def REALM: String = "secure site"
+
   private def authenticateRoles(roles: List[Role.Value], server: String): AuthenticationDirective[Int] =
-    authenticateBasic(realm = "secure site", RoleAuthenticator(roles, server.toInt))
+    authenticateBasic(realm = REALM, RoleAuthenticator(roles, server.toInt))
 
   def authenticateAdmin(server: String): AuthenticationDirective[Int] =
     authenticateRoles(roles = List(Role.ADMIN), server)
@@ -24,6 +27,9 @@ abstract class Routes(implicit connection: Connection, executionContext: Executi
   def authenticateModerator(server: String): AuthenticationDirective[Int] =
     authenticateRoles(roles = List(Role.ADMIN, Role.MODERATOR), server)
 
+  def authenticateMember(server: String): AuthenticationDirective[Int] =
+    authenticateRoles(roles = List(Role.ADMIN, Role.MODERATOR, Role.MEMBER), server)
+
   def authenticateUser: AuthenticationDirective[Int] =
-    authenticateBasic(realm = "secure site", BasicAuthenticator.apply)
+    authenticateBasic(realm = REALM, BasicAuthenticator.apply)
 }

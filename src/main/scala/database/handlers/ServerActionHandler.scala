@@ -1,11 +1,11 @@
-package database.actions
+package database.handlers
 
 import java.sql.{Connection, ResultSet}
 
 import model.{Success, _}
 import database.queries.ServerQueries
 
-object ServerActions extends Actions {
+object ServerActionHandler extends ActionHandler {
   def serverIdExists(id: Int)(implicit connection: Connection): Boolean = {
     val resultSet = runAndGetFirst(ServerQueries.getServerById, List(id))
     resultSet.getRow > 0
@@ -137,7 +137,7 @@ object ServerActions extends Actions {
   def addServerUser(server: Int, member: Int, role: Role.Value = Role.MEMBER)
                    (implicit connection: Connection): Result[NoRootElement] = {
     if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActions.userIdExists(member)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(member)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.addServerUser, List(server, member, role.toString))
       Success(
@@ -162,7 +162,7 @@ object ServerActions extends Actions {
   def updateUserRole(server: Int, user: Int, role: Role.Value)
                     (implicit connection: Connection): Result[NoRootElement] =
     if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActions.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.updateUserRole, List(role.toString, server, user))
       Success(
@@ -173,7 +173,7 @@ object ServerActions extends Actions {
 
   def removeServerUser(server: Int, user: Int)(implicit connection: Connection): Result[NoRootElement] =
     if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActions.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.removeServerUser, List(server, user))
       Success(

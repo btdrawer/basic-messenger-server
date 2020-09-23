@@ -1,4 +1,4 @@
-package database.actions
+package database.handlers
 
 import java.sql.Connection
 
@@ -6,7 +6,7 @@ import model._
 import database.queries.UserQueries
 import authentication.{AuthData, HashPassword}
 
-object UserActions extends Actions {
+object UserActionHandler extends ActionHandler {
   def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
     val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
     if (resultSet.getRow < 1) throw ApiException(FailureMessages.LOGIN_INCORRECT)

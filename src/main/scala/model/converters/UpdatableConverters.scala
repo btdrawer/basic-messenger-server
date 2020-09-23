@@ -3,7 +3,7 @@ package model.converters
 import java.sql.Connection
 
 import authentication.HashPassword
-import database.actions.UserActions.{checkPasswordIsValid, usernameExists}
+import database.handlers.UserActionHandler.{checkPasswordIsValid, usernameExists}
 import model.{ApiException, FailureMessages, UpdatableServer, UpdatableUser}
 
 trait UpdatableConverters {

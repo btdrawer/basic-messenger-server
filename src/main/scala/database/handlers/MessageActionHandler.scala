@@ -1,14 +1,14 @@
-package database.actions
+package database.handlers
 
 import java.sql.Connection
 
 import model._
 import database.queries.MessageQueries
 
-object MessageActions extends Actions {
+object MessageActionHandler extends ActionHandler {
   def createMessage(message: CreatableMessage, sender: Int)(implicit connection: Connection): Result[Message] = {
-    val server = ServerActions.getServerAsChildElement(message.server)
-    val senderDetails = ServerActions.getServerUser(message.server, sender)
+    val server = ServerActionHandler.getServerAsChildElement(message.server)
+    val senderDetails = ServerActionHandler.getServerUser(message.server, sender)
     val resultSet = runAndGetFirst(
       MessageQueries.createMessage,
       List(

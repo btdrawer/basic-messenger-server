@@ -5,14 +5,14 @@ import java.sql.Connection
 import akka.http.scaladsl.server.directives.Credentials
 import akka.http.scaladsl.server.directives.Credentials._
 
-import database.actions.{ServerActions, UserActions}
+import database.handlers.{ServerActionHandler, UserActionHandler}
 import model.{ApiException, FailureMessages, Role}
 
 case class AuthData(id: Int, password: String, salt: String)
 
 object BasicAuthenticator {
   private def verify(p: Provided, username: String)(implicit connection: Connection): Option[Int] = {
-    val authData = UserActions.getAuthData(username)
+    val authData = UserActionHandler.getAuthData(username)
     authData match {
       case Some(d) =>
         if (p.verify(d.password, HashPassword.verify(d.salt))) Some(d.id)
@@ -33,10 +33,10 @@ object RoleAuthenticator {
     server: Int,
     user: Int
   )(implicit connection: Connection): Option[Int] = {
-    val serverIdExists = ServerActions.serverIdExists(server)
+    val serverIdExists = ServerActionHandler.serverIdExists(server)
     if (!serverIdExists) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
-      val userRole = ServerActions.getServerUser(server, user)
+      val userRole = ServerActionHandler.getServerUser(server, user)
       if (roles.contains(userRole.role)) Some(user)
       else throw ApiException(FailureMessages.INSUFFICIENT_PERMISSIONS)
     }

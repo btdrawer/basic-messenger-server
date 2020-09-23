@@ -6,11 +6,12 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 
 import model._
-import database.actions.ServerActions
+import database.handlers.ServerActionHandler
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ServerRoutes()(implicit connection: Connection, executionContext: ExecutionContext) extends Routes {
+case class ServerRouteHandler()(implicit connection: Connection, executionContext: ExecutionContext)
+  extends RouteHandler {
   def routes: Route =
     pathPrefix("servers") {
       concat(
@@ -18,7 +19,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
           authenticateUser { id =>
             decodeRequest {
               entity(as[CreatableServer]) { server =>
-                val result: Future[Result[Server]] = Future(ServerActions.createServer(server, id))
+                val result: Future[Result[Server]] = Future(ServerActionHandler.createServer(server, id))
                 onComplete(result)(complete(_))
               }
             }
@@ -26,19 +27,19 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
         },
         get {
           path("search" / Segment) { name =>
-            val result: Future[List[ChildServer]] = Future(ServerActions.findServers(name))
+            val result: Future[List[ChildServer]] = Future(ServerActionHandler.findServers(name))
             onComplete(result)(complete(_))
           }
         },
         get {
           path("id" / Segment) { id =>
-            val result: Future[Result[Server]] = Future(ServerActions.getServerById(id.toInt))
+            val result: Future[Result[Server]] = Future(ServerActionHandler.getServerById(id.toInt))
             onComplete(result)(complete(_))
           }
         },
         get {
           path("address" / Segment) { address =>
-            val result: Future[Result[Server]] = Future(ServerActions.getServerByAddress(address))
+            val result: Future[Result[Server]] = Future(ServerActionHandler.getServerByAddress(address))
             onComplete(result)(complete(_))
           }
         },
@@ -48,7 +49,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
               decodeRequest {
                 entity(as[UpdatableServer]) { server =>
                   val result: Future[Result[NoRootElement]] =
-                    Future(ServerActions.updateServer(id.toInt, server))
+                    Future(ServerActionHandler.updateServer(id.toInt, server))
                   onComplete(result)(complete(_))
                 }
               }
@@ -59,7 +60,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
           path(Segment / "users" / Segment) { (server, user) =>
             authenticateModerator(server) { _ =>
               val result: Future[Result[NoRootElement]] =
-                Future(ServerActions.addServerUser(server.toInt, user.toInt))
+                Future(ServerActionHandler.addServerUser(server.toInt, user.toInt))
               onComplete(result)(complete(_))
             }
           }
@@ -68,7 +69,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
           path(Segment / "users" / Segment / "roles" / Segment) { (server, member, role) =>
             authenticateAdmin(server) { _ =>
               val result: Future[Result[NoRootElement]] =
-                Future(ServerActions.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
+                Future(ServerActionHandler.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
               onComplete(result)(complete(_))
             }
           }
@@ -76,7 +77,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
         delete {
           path(Segment) { id =>
             authenticateAdmin(id) { _ =>
-              val result: Future[Result[NoRootElement]] = Future(ServerActions.deleteServer(id.toInt))
+              val result: Future[Result[NoRootElement]] = Future(ServerActionHandler.deleteServer(id.toInt))
               onComplete(result)(complete(_))
             }
           }
@@ -85,7 +86,7 @@ case class ServerRoutes()(implicit connection: Connection, executionContext: Exe
           path(Segment / "users" / Segment) { (server, user) =>
             authenticateModerator(server) { _ =>
               val result: Future[Result[NoRootElement]] =
-                Future(ServerActions.removeServerUser(server.toInt, user.toInt))
+                Future(ServerActionHandler.removeServerUser(server.toInt, user.toInt))
               onComplete(result)(complete(_))
             }
           }
