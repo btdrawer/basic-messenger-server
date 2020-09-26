@@ -85,7 +85,7 @@ object UserActionHandler extends ActionHandler {
         Success(
           result = Some(
             User(
-              id = id,
+              id,
               username = rs.getString(1),
               servers,
               status = Status.withName(rs.getString(2))
