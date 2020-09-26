@@ -22,15 +22,16 @@ trait ActionHandler extends JsonConverters with UpdatableConverters {
     statement
   }
 
-  def runQuery(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
+  private def runQuery(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
     val statement = prepareStatement(query, parameters)
     statement.executeQuery()
   }
 
-  def runAndGetFirst(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
+  def runAndGetFirst(query: String, parameters: List[Any])(implicit connection: Connection): Option[ResultSet] = {
     val resultSet = runQuery(query, parameters)
     resultSet.first()
-    resultSet
+    if (resultSet.getRow < 1) None
+    else Some(resultSet)
   }
 
   @tailrec

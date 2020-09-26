@@ -6,36 +6,33 @@ import model.{Success, _}
 import database.queries.ServerQueries
 
 object ServerActionHandler extends ActionHandler {
-  def serverIdExists(id: Int)(implicit connection: Connection): Boolean = {
-    val resultSet = runAndGetFirst(ServerQueries.getServerById, List(id))
-    resultSet.getRow > 0
-  }
+  def serverIdExists(id: Int)(implicit connection: Connection): Boolean =
+    runAndGetFirst(ServerQueries.getServerById, List(id)).nonEmpty
 
-  private def addressExists(address: String)(implicit connection: Connection): Boolean = {
-    val resultSet = runAndGetFirst(ServerQueries.getServerByAddress, List(address))
-    resultSet.getRow > 0
-  }
+  private def addressExists(address: String)(implicit connection: Connection): Boolean =
+    runAndGetFirst(ServerQueries.getServerByAddress, List(address)).nonEmpty
 
   def createServer(server: CreatableServer, creator: Int)(implicit connection: Connection): Result[Server] =
     if (addressExists(server.address)) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
-    else {
-      val resultSet = runAndGetFirst(ServerQueries.createServer, List(server.name, server.address))
-      val id = resultSet.getInt(1)
-      addServerUser(id, creator, Role.ADMIN)
-        val serverUser = getServerUser(id, creator)
+    else runAndGetFirst(ServerQueries.createServer, List(server.name, server.address)) match {
+      case Some(rs) =>
+        val id = rs.getInt(1)
+        addServerUser(id, creator, Role.ADMIN)
+        val user = getServerUser(id, creator)
         Success(
           result = Some(
             Server(
               id,
               name = server.name,
               address = server.address,
-              users = List[ServerUserRole](serverUser),
+              users = List[ServerUserRole](user),
               messages = List[ChildMessage]()
             )
           ),
           message = Some("Server successfully created.")
         )
-      }
+      case None => throw ApiException(FailureMessages.GENERIC)
+    }
 
   def findServers(name: String)(implicit connection: Connection): List[ChildServer] =
     runAndIterate(
@@ -48,34 +45,32 @@ object ServerActionHandler extends ActionHandler {
       )
     )
 
-  private def getServer(queryToRun: () => ResultSet)(implicit connection: Connection): Result[Server] = {
-    val resultSet = queryToRun()
-    resultSet.first()
-    if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else {
-      val id = resultSet.getInt(1)
-      val users = getServerUsers(id)
-      val messages = getServerMessages(id, 100, 0)
-      Success(
-        result = Some(
-          Server(
-            id,
-            name = resultSet.getString(2),
-            address = resultSet.getString(3),
-            users,
-            messages
-          )
-        ),
-        message = None
-      )
+  private def getServer(queryToRun: () => Option[ResultSet])(implicit connection: Connection): Result[Server] =
+    queryToRun() match {
+      case Some(rs) =>
+        val id = rs.getInt(1)
+        val users = getServerUsers(id)
+        val messages = getServerMessages(id, 100, 0)
+        Success(
+          result = Some(
+            Server(
+              id,
+              name = rs.getString(2),
+              address = rs.getString(3),
+              users,
+              messages
+            )
+          ),
+          message = None
+        )
+      case None => throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     }
-  }
 
   def getServerById(id: Int)(implicit connection: Connection): Result[Server] =
-    getServer(() => runQuery(ServerQueries.getServerById, List(id)))
+    getServer(() => runAndGetFirst(ServerQueries.getServerById, List(id)))
 
   def getServerByAddress(address: String)(implicit connection: Connection): Result[Server] =
-    getServer(() => runQuery(ServerQueries.getServerByAddress, List(address)))
+    getServer(() => runAndGetFirst(ServerQueries.getServerByAddress, List(address)))
 
   private def getServerUsers(id: Int)(implicit connection: Connection): List[ServerUserRole] =
     runAndIterate(
@@ -91,32 +86,28 @@ object ServerActionHandler extends ActionHandler {
       )
     )
 
-  def getServerUser(serverId: Int, userId: Int)(implicit connection: Connection): ServerUserRole = {
-    val resultSet = runAndGetFirst(
-      ServerQueries.getServerUser,
-      List(serverId, userId)
-    )
-    if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
-    else ServerUserRole(
-      user = ChildUser(
-        id = resultSet.getInt(1),
-        username = resultSet.getString(2),
-        status = Status.withName(resultSet.getString(3))
-      ),
-      role = Role.withName(resultSet.getString(4))
-    )
-  }
+  def getServerUser(serverId: Int, userId: Int)(implicit connection: Connection): ServerUserRole =
+    runAndGetFirst(ServerQueries.getServerUser, List(serverId, userId)) match {
+      case Some(rs) => ServerUserRole(
+        user = ChildUser(
+          id = rs.getInt(1),
+          username = rs.getString(2),
+          status = Status.withName(rs.getString(3))
+        ),
+        role = Role.withName(rs.getString(4))
+      )
+      case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
+    }
 
-  def getServerAsChildElement(id: Int)(implicit connection: Connection): ChildServer = {
-    val resultSet = runQuery(ServerQueries.getServerById, List(id))
-    resultSet.first()
-    if (resultSet.getRow < 1) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else ChildServer(
-      id,
-      name = resultSet.getString(2),
-      address = resultSet.getString(3)
-    )
-  }
+  def getServerAsChildElement(id: Int)(implicit connection: Connection): ChildServer =
+    runAndGetFirst(ServerQueries.getServerById, List(id)) match {
+      case Some(rs) => ChildServer(
+        id,
+        name = rs.getString(2),
+        address = rs.getString(3)
+      )
+      case None => throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    }
 
   def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] =
     runAndIterate(

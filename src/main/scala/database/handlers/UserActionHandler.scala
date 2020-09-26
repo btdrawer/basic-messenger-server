@@ -9,25 +9,23 @@ import authentication.{AuthData, HashPassword}
 object UserActionHandler extends ActionHandler {
   def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
     val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
-    if (resultSet.getRow < 1) throw ApiException(FailureMessages.LOGIN_INCORRECT)
-    else Some(
-      AuthData(
-        id = resultSet.getInt(1),
-        password = resultSet.getString(2),
-        salt = resultSet.getString(3)
+    resultSet match {
+      case Some(rs) => Some(
+        AuthData(
+          id = rs.getInt(1),
+          password = rs.getString(2),
+          salt = rs.getString(3)
+        )
       )
-    )
+      case None => throw ApiException(FailureMessages.LOGIN_INCORRECT)
+    }
   }
 
-  def usernameExists(username: String)(implicit connection: Connection): Boolean = {
-    val resultSet = runAndGetFirst(UserQueries.checkUsernameExists, List(username))
-    resultSet.getRow > 0
-  }
+  def usernameExists(username: String)(implicit connection: Connection): Boolean =
+    runAndGetFirst(UserQueries.checkUsernameExists, List(username)).nonEmpty
 
-  def userIdExists(id: Int)(implicit connection: Connection): Boolean = {
-    val resultSet = runAndGetFirst(UserQueries.getUser, List(id))
-    resultSet.getRow > 0
-  }
+  def userIdExists(id: Int)(implicit connection: Connection): Boolean =
+    runAndGetFirst(UserQueries.getUser, List(id)).nonEmpty
 
   def checkPasswordIsValid(password: String): Boolean =
     password.length > 7 &&
@@ -36,13 +34,11 @@ object UserActionHandler extends ActionHandler {
       password.matches(".*[A-Z].*")
 
   def createUser(user: CreatableUser)(implicit connection: Connection): Result[User] =
-    if (!checkPasswordIsValid(user.password))
-      throw ApiException(FailureMessages.PASSWORD_INVALID)
-    else if (usernameExists(user.username))
-      throw ApiException(FailureMessages.USERNAME_EXISTS)
+    if (!checkPasswordIsValid(user.password)) throw ApiException(FailureMessages.PASSWORD_INVALID)
+    else if (usernameExists(user.username)) throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
       val hashedPassword = HashPassword(user.password)
-      val resultSet = runAndGetFirst(
+      runAndGetFirst(
         UserQueries.createUser,
         List(
           user.username,
@@ -51,18 +47,20 @@ object UserActionHandler extends ActionHandler {
           user.passwordReset.question,
           user.passwordReset.answer
         )
-      )
-      Success(
-        result = Some(
-          User(
-            id = resultSet.getInt(1),
-            username = resultSet.getString(2),
-            servers = List[UserServerRole](),
-            status = Status.withName(resultSet.getString(3))
-          )
-        ),
-        message = Some("User successfully created.")
-      )
+      ) match {
+        case Some(rs) => Success(
+          result = Some(
+            User(
+              id = rs.getInt(1),
+              username = rs.getString(2),
+              servers = List[UserServerRole](),
+              status = Status.withName(rs.getString(3))
+            )
+          ),
+          message = Some("User successfully created.")
+        )
+        case None => throw ApiException(FailureMessages.GENERIC)
+      }
     }
 
   private def getUserServers(id: Int)(implicit connection: Connection): List[UserServerRole] =
@@ -81,20 +79,21 @@ object UserActionHandler extends ActionHandler {
 
   def getUser(id: Int)(implicit connection: Connection): Result[User] = {
     val resultSet = runAndGetFirst(UserQueries.getUser, List(id))
-    if (resultSet.getRow < 1) throw ApiException(FailureMessages.USER_NOT_FOUND)
-    else {
-      val servers = getUserServers(id)
-      Success(
-        result = Some(
-          User(
-            id = id,
-            username = resultSet.getString(1),
-            servers,
-            status = Status.withName(resultSet.getString(2))
-          )
-        ),
-        message = None
-      )
+    resultSet match {
+      case Some(rs) =>
+        val servers = getUserServers(id)
+        Success(
+          result = Some(
+            User(
+              id = id,
+              username = rs.getString(1),
+              servers,
+              status = Status.withName(rs.getString(2))
+            )
+          ),
+          message = None
+        )
+      case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
     }
   }
 
