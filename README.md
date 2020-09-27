@@ -36,22 +36,24 @@ If an endpoint fails, this will be the response format (in this case, a user was
 
 ### Server
 
+#### Structure
+
 | Parameter | Type             |
 |-----------|------------------|
 | id        | Int              |
 | name      | String           |
 | address   | String           |
-| users     | UserServerRole[] |
+| users     | ServerUserRole[] |
 | messages  | Message[]        |
 
-#### UserServerRole
+##### ServerUserRole
 
 | Parameter | Type |
 |-----------|------|
 | user      | User |
 | role      | Role |
 
-#### Role
+##### Role
 
 Every user on a server has one of these roles:
 
@@ -59,7 +61,7 @@ Every user on a server has one of these roles:
 * `MODERATOR` - Can send messages, add and remove users
 * `MEMBER` - Can send messages
 
-#### Example JSON
+#### Sample JSON
 
 ````JSON
 {
@@ -111,11 +113,9 @@ Sample request:
 }
 ````
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -143,11 +143,9 @@ Sample response:
 
 Searches for servers by name.
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 [
@@ -168,11 +166,9 @@ Sample response:
 
 Retrieve a single server by its ID.
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -212,11 +208,9 @@ Sample response:
 
 Retrieve a single server by its address.
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -283,11 +277,9 @@ Add a user to the server.
 * `ADMIN`
 * `MODERATOR`
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -305,11 +297,9 @@ Change the role of a user on the server.
 
 * `ADMIN`
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -327,11 +317,9 @@ Delete a server.
 
 * `ADMIN`
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -351,11 +339,9 @@ Remove a user from a server.
 * `ADMIN`
 * `MODERATOR`
 
-###### Response (success)
+###### Sample response
 
 Status: `200 OK`
-
-Sample response:
 
 ````JSON
 {
@@ -367,14 +353,16 @@ Sample response:
 
 ### User
 
+#### Structure
+
 | Parameter | Type             |
 |-----------|------------------|
 | id        | Int              |
 | username  | String           |
 | status    | Status           |
-| servers   | ServerUserRole[] |
+| servers   | UserServerRole[] |
 
-#### Status
+##### Status
 
 The `status` field must be one of the following values:
 
@@ -382,14 +370,23 @@ The `status` field must be one of the following values:
 * `OFFLINE`
 * `BUSY`
 
-#### ServerUserRole
+##### UserServerRole
 
 | Parameter | Type   |
 |-----------|--------|
 | server    | Server |
 | role      | Role   |
 
-#### Example JSON
+##### PasswordReset
+
+| Parameter | Type   |
+|-----------|--------|
+| question  | Int    |
+| answer    | String |
+
+The `question` is an ID number which should be provided by the server administrator.
+
+#### Sample JSON
 
 ````JSON
 {
@@ -406,5 +403,212 @@ The `status` field must be one of the following values:
       "role": "ADMIN"
     }
   ]
+}
+````
+
+#### Endpoints
+
+##### `POST /users`
+
+Create a new user (sign up).
+
+| Parameter     | Type          | Required? |
+|---------------|---------------|-----------|
+| username      | String        | Yes       |
+| password      | String        | Yes       |
+| passwordReset | PasswordReset | Yes       |
+
+**NOTE**: The password must contain at least one uppercase letter and one number.
+
+###### Sample request
+
+````JSON
+{
+  "username": "ben",
+  "password": "Password222",
+  "passwordReset": {
+    "question": 1,
+    "answer": "Hello"
+  }
+}
+````
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "success": true,
+  "result": {
+    "id": 1,
+    "username": "ben",
+    "status": "ONLINE",
+    "servers": []
+  },
+  "message": "User created successfully."
+}
+````
+
+##### `GET /users/<id>`
+
+Retrieve a user by their ID.
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "success": true,
+  "result": {
+    "id": 1,
+    "username": "ben",
+    "status": "ONLINE",
+    "servers": [
+      {
+        "server": {
+          "id": 1,
+          "name": "Example Server",
+          "address": "exampleserver"
+        },
+        "role": "ADMIN"
+      }
+    ]
+  },
+  "message": null
+}
+````
+
+##### `PUT /users`
+
+Update the authenticated user.
+
+| Parameter     | Type          | Required? |
+|---------------|---------------|-----------|
+| username      | String        | No        |
+| password      | String        | No        |
+| status        | Status        | No        |
+| passwordReset | PasswordReset | No        |
+
+**NOTE**: The password must contain at least one uppercase letter and one number.
+
+###### Sample request
+
+````JSON
+{
+  "username": "ben",
+  "password": "Password222",
+  "status": "OFFLINE",
+  "passwordReset": {
+    "question": 1,
+    "answer": "Hello"
+  }
+}
+````
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "success": true,
+  "result": null,
+  "message": "User updated successfully."
+}
+````
+
+##### `DELETE /users`
+
+Delete the authenticated user.
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "success": true,
+  "result": null,
+  "message": "User deleted successfully."
+}
+````
+
+### Message
+
+#### Structure
+
+| Parameter | Type             |
+|-----------|------------------|
+| id        | Int              |
+| content   | String           |
+| server    | Server           |
+| sender    | ServerUserRole   |
+| createdAt | Timestamp        |
+
+#### Sample JSON
+
+````JSON
+{
+  "id": 1,
+  "content": "Hello",
+  "server": {
+    "id": 1,
+    "name": "Example Server",
+    "address": "exampleserver"
+  },
+  "sender": {
+    "user": {
+      "id": 1,
+      "username": "ben",
+      "status": "ONLINE"
+    },
+    "role": "ADMIN"
+  },
+  "createdAt": 16011364370000
+}
+````
+
+#### Endpoints
+
+##### `POST /messages`
+
+| Parameter | Type   | Required? |
+|-----------|--------|-----------|
+| content   | String | Yes       |
+| server    | Int    | Yes       |
+
+###### Sample request
+
+````JSON
+{
+  "content": "Hello",
+  "server": 1
+}
+````
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "id": 1,
+  "content": "Hello",
+  "server": {
+    "id": 1,
+    "name": "Example Server",
+    "address": "exampleserver"
+  },
+  "sender": {
+    "user": {
+      "id": 1,
+      "username": "ben",
+      "status": "ONLINE"
+    },
+    "role": "ADMIN"
+  },
+  "createdAt": 16011364370000
 }
 ````
