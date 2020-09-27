@@ -574,6 +574,8 @@ Status: `200 OK`
 
 ##### `POST /messages`
 
+Send a message to a server.
+
 | Parameter | Type   | Required? |
 |-----------|--------|-----------|
 | content   | String | Yes       |
