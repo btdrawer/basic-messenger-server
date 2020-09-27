@@ -1,6 +1,7 @@
 package database.handlers
 
-import java.sql.Connection
+import java.sql.{Connection, Timestamp}
+import java.time.Instant
 
 import model._
 import database.queries.MessageQueries
@@ -9,13 +10,14 @@ object MessageActionHandler extends ActionHandler {
   def createMessage(message: CreatableMessage, sender: Int)(implicit connection: Connection): Result[Message] = {
     val server = ServerActionHandler.getServerAsChildElement(message.server)
     val senderDetails = ServerActionHandler.getServerUser(message.server, sender)
+    val timestamp = Timestamp.from(Instant.EPOCH)
     runAndGetFirst(
       MessageQueries.createMessage,
       List(
         message.content,
         sender,
         message.server,
-        message.createdAt
+        timestamp
       )
     ) match {
       case Some(rs) => Success(
@@ -25,7 +27,7 @@ object MessageActionHandler extends ActionHandler {
             content = message.content,
             server,
             sender = senderDetails,
-            createdAt = message.createdAt
+            createdAt = timestamp
           )
         ),
         message = Some("Message sent.")

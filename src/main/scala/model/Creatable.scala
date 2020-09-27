@@ -19,6 +19,5 @@ case class CreatablePasswordReset(question: Int, answer: String) extends Creatab
 
 case class CreatableMessage(
   content: String,
-  server: Int,
-  createdAt: Timestamp
+  server: Int
 ) extends Creatable

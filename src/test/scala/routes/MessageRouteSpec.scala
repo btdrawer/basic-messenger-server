@@ -12,8 +12,7 @@ class MessageRouteSpec extends RouteSpec {
     "create a new message" in {
       val params = CreatableMessage(
         content = "Hello world",
-        server = 1,
-        createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
+        server = 1
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
       request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
@@ -29,8 +28,7 @@ class MessageRouteSpec extends RouteSpec {
     "return error if server not found" in {
       val params = CreatableMessage(
         content = "Hello world",
-        server = 30,
-        createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
+        server = 30
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
       request ~> addCredentials(testLogins("admin")) ~!> routes ~> check {
@@ -43,8 +41,7 @@ class MessageRouteSpec extends RouteSpec {
     "return error if user is not a member of the server" in {
       val params = CreatableMessage(
         content = "Hello world",
-        server = 2,
-        createdAt = new Timestamp(Instant.EPOCH.getEpochSecond)
+        server = 2
       ).toJson.toString
       val request = this.createPostRoute("/messages", params)
       request ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
