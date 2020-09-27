@@ -6,7 +6,7 @@ A basic messenger API built using Akka HTTP and PostgreSQL.
 
 The API uses basic HTTP authentication that requires a user's username-password combination.
 
-## Response format
+## Response format
 
 Endpoints that either operate on, or retrieve, a single item have the following response format, if successful:
 
@@ -32,11 +32,34 @@ If an endpoint fails, this will be the response format (in this case, a user was
 }
 ````
 
-## Endpoints
+## Resources
 
-### Servers
+### Server
 
-Resource structure:
+| Parameter | Type             |
+|-----------|------------------|
+| id        | Int              |
+| name      | String           |
+| address   | String           |
+| users     | UserServerRole[] |
+| messages  | Message[]        |
+
+#### UserServerRole
+
+| Parameter | Type |
+|-----------|------|
+| user      | User |
+| role      | Role |
+
+#### Role
+
+Every user on a server has one of these roles:
+
+* `ADMIN` - Can send messages, add and remove users, update the server's name, and delete the server
+* `MODERATOR` - Can send messages, add and remove users
+* `MEMBER` - Can send messages
+
+#### Example JSON
 
 ````JSON
 {
@@ -68,17 +91,11 @@ Resource structure:
 }
 ````
 
-#### Roles
+#### Endpoints
 
-Every user on a server has one of these roles:
+##### `POST /servers`
 
-* `ADMIN` - Can send messages, add and remove users, update the server's name, and delete the server
-* `MODERATOR` - Can send messages, add and remove users
-* `MEMBER` - Can send messages
-
-#### `POST /servers`
-
-##### Request body
+###### Request body
 
 | Parameter | Type   | Required? |
 |-----------|--------|-----------|
@@ -94,7 +111,7 @@ Sample request:
 }
 ````
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -122,11 +139,11 @@ Sample response:
 }
 ````
 
-#### `GET /servers/search/<name>`
+##### `GET /servers/search/<name>`
 
 Searches for servers by name.
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -147,11 +164,11 @@ Sample response:
 ]
 ````
 
-#### `GET /servers/id/<id>`
+##### `GET /servers/id/<id>`
 
 Retrieve a single server by its ID.
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -191,11 +208,11 @@ Sample response:
 }
 ````
 
-#### `GET /servers/address/<address>`
+##### `GET /servers/address/<address>`
 
 Retrieve a single server by its address.
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -235,15 +252,15 @@ Sample response:
 }
 ````
 
-#### `PUT /servers/<id>`
+##### `PUT /servers/<id>`
 
 Update a server.
 
-##### Permissions level required
+###### Permissions level required
 
 * `ADMIN`
 
-##### Request body
+###### Request body
 
 | Parameter | Type   | Required? |
 |-----------|--------|-----------|
@@ -257,16 +274,16 @@ Sample request:
 }
 ````
 
-#### `PUT /servers/<server_id>/users/<user_id>`
+##### `PUT /servers/<server_id>/users/<user_id>`
 
 Add a user to the server.
 
-##### Permissions level required
+###### Permissions level required
 
 * `ADMIN`
 * `MODERATOR`
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -280,15 +297,15 @@ Sample response:
 }
 ````
 
-#### `PUT /servers/<server_id>/users/<user_id>/roles/<role>`
+##### `PUT /servers/<server_id>/users/<user_id>/roles/<role>`
 
 Change the role of a user on the server.
 
-##### Permissions level required
+###### Permissions level required
 
 * `ADMIN`
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -302,15 +319,15 @@ Sample response:
 }
 ````
 
-#### `DELETE /servers/<id>`
+##### `DELETE /servers/<id>`
 
 Delete a server.
 
-##### Permissions level required
+###### Permissions level required
 
 * `ADMIN`
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -324,17 +341,17 @@ Sample response:
 }
 ````
 
-#### `DELETE /servers/<server_id>/users/<user_id>`
+##### `DELETE /servers/<server_id>/users/<user_id>`
 
 Remove a user from a server.
 
 
-##### Permissions level required
+###### Permissions level required
 
 * `ADMIN`
 * `MODERATOR`
 
-##### Response (success)
+###### Response (success)
 
 Status: `200 OK`
 
@@ -345,5 +362,49 @@ Sample response:
   "success": true,
   "result": null,
   "message": "User removed from server."
+}
+````
+
+### User
+
+| Parameter | Type             |
+|-----------|------------------|
+| id        | Int              |
+| username  | String           |
+| status    | Status           |
+| servers   | ServerUserRole[] |
+
+#### Status
+
+The `status` field must be one of the following values:
+
+* `ONLINE`
+* `OFFLINE`
+* `BUSY`
+
+#### ServerUserRole
+
+| Parameter | Type   |
+|-----------|--------|
+| server    | Server |
+| role      | Role   |
+
+#### Example JSON
+
+````JSON
+{
+  "id": 1,
+  "username": "ben",
+  "status": "ONLINE",
+  "servers": [
+    {
+      "server": {
+        "id": 1,
+        "name": "Example Server",
+        "address": "exampleserver"
+      },
+      "role": "ADMIN"
+    }
+  ]
 }
 ````
