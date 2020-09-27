@@ -45,12 +45,26 @@ object ServerActionHandler extends ActionHandler {
       )
     )
 
+  private def getServerUsers(id: Int)(implicit connection: Connection): List[ServerUserRole] =
+    runAndIterate(
+      ServerQueries.getServerUsers,
+      List(id),
+      resultSet => ServerUserRole(
+        user = ChildUser(
+          id = resultSet.getInt(1),
+          username = resultSet.getString(2),
+          status = Status.withName(resultSet.getString(3))
+        ),
+        role = Role.withName(resultSet.getString(4))
+      )
+    )
+
   private def getServer(queryToRun: () => Option[ResultSet])(implicit connection: Connection): Result[Server] =
     queryToRun() match {
       case Some(rs) =>
         val id = rs.getInt(1)
         val users = getServerUsers(id)
-        val messages = getServerMessages(id, 100, 0)
+        val messages = MessageActionHandler.getServerMessages(id, 100, 0)
         Success(
           result = Some(
             Server(
@@ -71,20 +85,6 @@ object ServerActionHandler extends ActionHandler {
 
   def getServerByAddress(address: String)(implicit connection: Connection): Result[Server] =
     getServer(() => runAndGetFirst(ServerQueries.getServerByAddress, List(address)))
-
-  private def getServerUsers(id: Int)(implicit connection: Connection): List[ServerUserRole] =
-    runAndIterate(
-      ServerQueries.getServerUsers,
-      List(id),
-      resultSet => ServerUserRole(
-        user = ChildUser(
-          id = resultSet.getInt(1),
-          username = resultSet.getString(2),
-          status = Status.withName(resultSet.getString(3))
-        ),
-        role = Role.withName(resultSet.getString(4))
-      )
-    )
 
   def getServerUser(serverId: Int, userId: Int)(implicit connection: Connection): ServerUserRole =
     runAndGetFirst(ServerQueries.getServerUser, List(serverId, userId)) match {
@@ -108,27 +108,6 @@ object ServerActionHandler extends ActionHandler {
       )
       case None => throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     }
-
-  def getServerMessages(id: Int, limit: Int = 100, offset: Int = 0)
-                       (implicit connection: Connection): List[ChildMessage] = {
-    if (limit < 0 || limit > 1000) throw ApiException(FailureMessages.BAD_LIMIT)
-    else if (offset < 0) throw ApiException(FailureMessages.BAD_OFFSET)
-    else runAndIterate(
-      ServerQueries.getServerMessages,
-      List(id, limit, offset),
-      resultSet =>
-        ChildMessage(
-          id = resultSet.getInt(1),
-          content = resultSet.getString(2),
-          sender = ChildUser(
-            id = resultSet.getInt(3),
-            username = resultSet.getString(4),
-            status = Status.withName(resultSet.getString(5))
-          ),
-          createdAt = resultSet.getTimestamp(6)
-        )
-    )
-  }
 
   def addServerUser(server: Int, member: Int, role: Role.Value = Role.MEMBER)
                    (implicit connection: Connection): Result[NoRootElement] = {

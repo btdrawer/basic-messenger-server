@@ -97,6 +97,8 @@ Every user on a server has one of these roles:
 
 ##### `POST /servers`
 
+Create a new server.
+
 ###### Request body
 
 | Parameter | Type   | Required? |
@@ -104,7 +106,7 @@ Every user on a server has one of these roles:
 | name      | String | Yes       |
 | address   | String | Yes       |
 
-Sample request:
+###### Sample body
 
 ````JSON
 {
@@ -141,7 +143,7 @@ Status: `200 OK`
 
 ##### `GET /servers/search/<name>`
 
-Searches for servers by name.
+Search for servers by name.
 
 ###### Sample response
 
@@ -569,21 +571,21 @@ Status: `200 OK`
 
 #### Endpoints
 
-##### `POST /messages`
+##### `POST /messages/server/<server_id>`
 
 Send a message to a server.
+
+###### Request body
 
 | Parameter | Type   | Required? |
 |-----------|--------|-----------|
 | content   | String | Yes       |
-| server    | Int    | Yes       |
 
 ###### Sample request
 
 ````JSON
 {
-  "content": "Hello",
-  "server": 1
+  "content": "Hello"
 }
 ````
 
@@ -612,15 +614,58 @@ Status: `200 OK`
 }
 ````
 
-##### `GET /messages`
 
-Retrieve a list of messages from a server
+##### `POST /messages/direct/<user_id>`
+
+Send a message to another user.
+
+###### Request body
+
+| Parameter | Type   | Required? |
+|-----------|--------|-----------|
+| content   | String | Yes       |
+
+###### Sample request
+
+````JSON
+{
+  "content": "Hello"
+}
+````
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+{
+  "id": 1,
+  "content": "Hello",
+  "server": {
+    "id": 1,
+    "name": "Example Server",
+    "address": "exampleserver"
+  },
+  "sender": {
+    "user": {
+      "id": 1,
+      "username": "ben",
+      "status": "ONLINE"
+    },
+    "role": "ADMIN"
+  },
+  "createdAt": 16011364370000
+}
+````
+
+##### `GET /messages/server/<server_id>`
+
+Retrieve a list of messages from a server.
 
 ###### Query parameters
 
 | Parameter | Type   | Required? | Default |
 |-----------|--------|-----------|---------|
-| server    | Int    | Yes       |         |
 | limit     | Int    | No        | 100     |
 | offset    | Int    | No        | 0       |
 
@@ -643,3 +688,35 @@ Status: `200 OK`
   }
 ]
 ````
+
+##### `GET /messages/direct/<user_id>`
+
+Retrieve a list of direct messages with another user.
+
+###### Query parameters
+
+| Parameter | Type   | Required? | Default |
+|-----------|--------|-----------|---------|
+| limit     | Int    | No        | 100     |
+| offset    | Int    | No        | 0       |
+
+**NOTE**: The maximum `limit` that can be set is 1000.
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+[
+  {
+    "id": 1,
+    "content": "Hello",
+    "user": {
+      "id": 1,
+      "username": "ben",
+      "status": "ONLINE"
+    }
+  }
+]
+````
+

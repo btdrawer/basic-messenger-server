@@ -41,7 +41,12 @@ object UserQueries {
       | WHERE id = ?
       |""".stripMargin
 
-  def deleteUser: String = "DELETE FROM messages WHERE sender = ?;" +
-    "DELETE FROM server_users WHERE \"user\" = ?;" +
-    "DELETE FROM users WHERE id = ?;"
+  def deleteUser: String =
+    """
+      |DELETE FROM direct_messages WHERE sender = ?;
+      |DELETE FROM direct_messages WHERE recipient = ?;
+      |DELETE FROM server_messages WHERE sender = ?;
+      |DELETE FROM server_users WHERE "user" = ?;
+      |DELETE FROM users WHERE id = ?;
+      |""".stripMargin
 }

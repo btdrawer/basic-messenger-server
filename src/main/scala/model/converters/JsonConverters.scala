@@ -31,6 +31,16 @@ class TimestampJsonConverter extends RootJsonFormat[Timestamp] {
   }
 }
 
+class ServerMessageFormat extends RootJsonFormat[ServerMessage] with DefaultJsonProtocol {
+  override def write(obj: ServerMessage): JsValue = JsObject(
+    ("id", JsNumber(obj.id)),
+    ("content", JsString(obj.content)),
+    ("server", JsObject())
+  )
+
+  override def read(json: JsValue): ServerMessage = ???
+}
+
 trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val timestampFormat: RootJsonFormat[Timestamp] = new TimestampJsonConverter
 
@@ -41,7 +51,7 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
 
   // Creatable
 
-  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat2(CreatableMessage)
+  implicit val creatableMessageFormat: RootJsonFormat[CreatableMessage] = jsonFormat1(CreatableMessage)
   implicit val creatableServerFormat: RootJsonFormat[CreatableServer] = jsonFormat2(CreatableServer)
   implicit val creatablePasswordResetFormat: RootJsonFormat[CreatablePasswordReset] =
     jsonFormat2(CreatablePasswordReset)
@@ -62,7 +72,24 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val userServerRoleFormat: RootJsonFormat[UserServerRole] = jsonFormat2(UserServerRole)
   implicit val serverUserRoleFormat: RootJsonFormat[ServerUserRole] = jsonFormat2(ServerUserRole)
 
-  implicit val messageFormat: RootJsonFormat[Message] = jsonFormat5(Message)
+  implicit val serverMessageFormat: RootJsonFormat[ServerMessage] =
+    jsonFormat(
+      ServerMessage,
+      "id",
+      "content",
+      "server",
+      "sender",
+      "createdAt"
+    )
+  implicit val directMessageFormat: RootJsonFormat[DirectMessage] =
+    jsonFormat(
+      DirectMessage,
+      "id",
+      "content",
+      "recipient",
+      "sender",
+      "createdAt"
+    )
   implicit val serverFormat: RootJsonFormat[Server] = jsonFormat5(Server)
   implicit val userFormat: RootJsonFormat[User] = jsonFormat4(User)
 
@@ -73,7 +100,10 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
 
   // Result
 
-  implicit val messageResultFormat: RootJsonFormat[Result[Message]] = jsonFormat3(Result[Message])
+  implicit val serverMessageResultFormat: RootJsonFormat[Result[ServerMessage]] =
+    jsonFormat3(Result[ServerMessage])
+  implicit val directMessageResultFormat: RootJsonFormat[Result[DirectMessage]] =
+    jsonFormat3(Result[DirectMessage])
   implicit val serverResultFormat: RootJsonFormat[Result[Server]] = jsonFormat3(Result[Server])
   implicit val userResultFormat: RootJsonFormat[Result[User]] = jsonFormat3(Result[User])
 

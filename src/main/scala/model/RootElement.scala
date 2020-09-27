@@ -41,10 +41,25 @@ case class PasswordReset(question: PasswordResetQuestion, answer: String)
 
 case class PasswordResetQuestion(id: Int, content: String)
 
-case class Message(
-  id: Int,
-  content: String,
-  server: ChildServer,
-  sender: ChildUser,
-  createdAt: Timestamp
+class Message(
+  val id: Int,
+  val content: String,
+  val sender: ChildUser,
+  val createdAt: Timestamp
 ) extends RootElement
+
+case class ServerMessage(
+  override val id: Int,
+  override val content: String,
+  server: ChildServer,
+  override val sender: ChildUser,
+  override val createdAt: Timestamp
+) extends Message(id, content, sender, createdAt)
+
+case class DirectMessage(
+  override val id: Int,
+  override val content: String,
+  recipient: ChildUser,
+  override val sender: ChildUser,
+  override val createdAt: Timestamp
+) extends Message(id, content, sender, createdAt)

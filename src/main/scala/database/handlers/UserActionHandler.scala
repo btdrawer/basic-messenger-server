@@ -77,9 +77,8 @@ object UserActionHandler extends ActionHandler {
       )
     )
 
-  def getUser(id: Int)(implicit connection: Connection): Result[User] = {
-    val resultSet = runAndGetFirst(UserQueries.getUser, List(id))
-    resultSet match {
+  def getUser(id: Int)(implicit connection: Connection): Result[User] =
+    runAndGetFirst(UserQueries.getUser, List(id)) match {
       case Some(rs) =>
         val servers = getUserServers(id)
         Success(
@@ -95,7 +94,16 @@ object UserActionHandler extends ActionHandler {
         )
       case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
     }
-  }
+
+  def getUserAsChildElement(id: Int)(implicit connection: Connection): ChildUser =
+    runAndGetFirst(UserQueries.getUser, List(id)) match {
+      case Some(rs) => ChildUser(
+        id,
+        username = rs.getString(1),
+        status = Status.withName(rs.getString(2))
+      )
+      case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
+    }
 
   def updateUser(id: Int, user: UpdatableUser)(implicit connection: Connection): Result[User] = {
     runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
@@ -109,7 +117,7 @@ object UserActionHandler extends ActionHandler {
   def deleteUser(id: Int)(implicit connection: Connection): Result[NoRootElement] =
     if (!userIdExists(id)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
-      runUpdate(UserQueries.deleteUser, List(id, id, id))
+      runUpdate(UserQueries.deleteUser, List(id, id, id, id, id))
       Success(
         result = None,
         message = Some("User deleted.")

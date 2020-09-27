@@ -1,7 +1,5 @@
 package model
 
-import java.sql.Timestamp
-
 sealed trait Creatable
 
 case class CreatableServer(
@@ -17,7 +15,4 @@ case class CreatableUser(
 
 case class CreatablePasswordReset(question: Int, answer: String) extends Creatable
 
-case class CreatableMessage(
-  content: String,
-  server: Int
-) extends Creatable
+case class CreatableMessage(content: String) extends Creatable

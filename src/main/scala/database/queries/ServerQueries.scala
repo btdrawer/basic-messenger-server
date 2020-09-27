@@ -29,21 +29,6 @@ object ServerQueries {
       | WHERE server_users.server = ? AND users.id = ?
       |""".stripMargin
 
-  def getServerMessages: String =
-    """
-      |SELECT
-      |   messages.id AS messageid,
-      |   content,
-      |   users.id AS userid,
-      |   users.username,
-      |   users.status,
-      |   messages."createdAt"
-      | FROM messages
-      | JOIN users ON users.id = messages.sender
-      | WHERE messages.server = ?
-      | LIMIT ? OFFSET ?
-      |""".stripMargin
-
   def updateServer: String =
     """
       |UPDATE servers
@@ -70,7 +55,7 @@ object ServerQueries {
 
   def deleteServer: String =
     """
-      |DELETE FROM messages WHERE server = ?;
+      |DELETE FROM server_messages WHERE server = ?;
       |DELETE FROM server_users WHERE server = ?;
       |DELETE FROM servers WHERE id = ?
       |""".stripMargin

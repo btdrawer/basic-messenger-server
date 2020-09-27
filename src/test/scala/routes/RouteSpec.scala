@@ -20,7 +20,8 @@ class RouteSpec extends AnyWordSpec
   with Matchers
   with ScalatestRouteTest
   with JsonConverters
-  with DatabaseSeeder {
+  with DatabaseSeeder
+  with Model {
   lazy val routes: Route = App.routes
 
   private def createRoute(requestBuilder: RequestBuilder, route: String, params: String): HttpRequest = {

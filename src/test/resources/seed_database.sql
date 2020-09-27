@@ -1,4 +1,5 @@
-DELETE FROM messages CASCADE;
+DELETE FROM direct_messages CASCADE;
+DELETE FROM server_messages CASCADE;
 DELETE FROM server_users CASCADE;
 DELETE FROM servers CASCADE;
 DELETE FROM users CASCADE;
@@ -33,9 +34,16 @@ INSERT INTO server_users ("user", server, role) VALUES (3, 1, 'MEMBER');
 INSERT INTO server_users ("user", server, role) VALUES (1, 2, 'ADMIN');
 INSERT INTO server_users ("user", server, role) VALUES (3, 2, 'MEMBER');
 
-INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+INSERT INTO server_messages (id, "content", "server", "sender", "createdAt")
     VALUES (1, 'Hello1', 1, 1, '2020-09-27 11:28:00');
-INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+INSERT INTO server_messages (id, "content", "server", "sender", "createdAt")
     VALUES (2, 'Hello2', 1, 2, '2020-09-27 11:28:00');
-INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+INSERT INTO server_messages (id, "content", "server", "sender", "createdAt")
     VALUES (3, 'Hello3', 1, 3, '2020-09-27 11:28:00');
+
+INSERT INTO direct_messages (id, "content", "recipient", "sender", "createdAt")
+    VALUES (1, 'Hello1', 2, 1, '2020-09-27 11:28:00');
+INSERT INTO direct_messages (id, "content", "recipient", "sender", "createdAt")
+    VALUES (2, 'Hello2', 1, 2, '2020-09-27 11:29:00');
+INSERT INTO direct_messages (id, "content", "recipient", "sender", "createdAt")
+    VALUES (3, 'Hello3', 2, 1, '2020-09-27 11:31:00');
