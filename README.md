@@ -262,7 +262,7 @@ Update a server.
 |-----------|--------|-----------|
 | name      | String | No        |
 
-Sample request:
+###### Sample request
 
 ````JSON
 {
@@ -414,6 +414,8 @@ The `question` is an ID number which should be provided by the server administra
 
 Create a new user (sign up).
 
+###### Request body
+
 | Parameter     | Type          | Required? |
 |---------------|---------------|-----------|
 | username      | String        | Yes       |
@@ -485,6 +487,8 @@ Status: `200 OK`
 ##### `PUT /users`
 
 Update the authenticated user.
+
+###### Request body
 
 | Parameter     | Type          | Required? |
 |---------------|---------------|-----------|
