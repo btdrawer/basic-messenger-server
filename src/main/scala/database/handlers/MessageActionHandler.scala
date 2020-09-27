@@ -67,46 +67,41 @@ object MessageActionHandler extends ActionHandler {
     }
   }
 
-  def getServerMessages(id: Int, limit: Int = 100, offset: Int = 0)
-                       (implicit connection: Connection): List[ChildMessage] =
+  private def getMessages(query: String, parameters: List[Any], limit: Int, offset: Int)
+                         (implicit connection: Connection): List[ChildMessage] =
     if (limit < 0 || limit > 1000) throw ApiException(FailureMessages.BAD_LIMIT)
     else if (offset < 0) throw ApiException(FailureMessages.BAD_OFFSET)
-    else {
-      runAndIterate(
-        MessageQueries.getServerMessages,
-        List(id, limit, offset),
-        resultSet =>
-          ChildMessage(
-            id = resultSet.getInt(1),
-            content = resultSet.getString(2),
-            sender = ChildUser(
-              id = resultSet.getInt(3),
-              username = resultSet.getString(4),
-              status = Status.withName(resultSet.getString(5))
-            ),
-            createdAt = resultSet.getTimestamp(6)
-          )
-      )
-    }
+    else runAndIterate(
+      query,
+      parameters,
+      resultSet =>
+        ChildMessage(
+          id = resultSet.getInt(1),
+          content = resultSet.getString(2),
+          sender = ChildUser(
+            id = resultSet.getInt(3),
+            username = resultSet.getString(4),
+            status = Status.withName(resultSet.getString(5))
+          ),
+          createdAt = resultSet.getTimestamp(6)
+        )
+    )
+
+  def getServerMessages(id: Int, limit: Int = 100, offset: Int = 0)
+                       (implicit connection: Connection): List[ChildMessage] =
+    getMessages(
+      MessageQueries.getServerMessages,
+      List(id, limit, offset),
+      limit,
+      offset
+    )
 
   def getDirectMessages(user1: Int, user2: Int, limit: Int = 100, offset: Int = 0)
                        (implicit connection: Connection): List[ChildMessage] =
-    if (limit < 0 || limit > 1000) throw ApiException(FailureMessages.BAD_LIMIT)
-    else if (offset < 0) throw ApiException(FailureMessages.BAD_OFFSET)
-    else 
-      runAndIterate(
-        MessageQueries.getDirectMessages,
-        List(user1, user2, user2, user1, limit, offset),
-        resultSet =>
-          ChildMessage(
-            id = resultSet.getInt(1),
-            content = resultSet.getString(2),
-            sender = ChildUser(
-              id = resultSet.getInt(3),
-              username = resultSet.getString(4),
-              status = Status.withName(resultSet.getString(5))
-            ),
-            createdAt = resultSet.getTimestamp(6)
-          )
-      )
+    getMessages(
+      MessageQueries.getDirectMessages,
+      List(user1, user2, user2, user1, limit, offset),
+      limit,
+      offset
+    )
 }
