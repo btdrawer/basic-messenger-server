@@ -4,6 +4,7 @@ import java.sql.Timestamp
 
 import akka.http.scaladsl.model.StatusCodes
 import spray.json.enrichAny
+
 import model._
 
 class MessageRouteSpec extends RouteSpec {
