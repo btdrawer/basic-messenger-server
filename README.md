@@ -611,3 +611,35 @@ Status: `200 OK`
   "createdAt": 16011364370000
 }
 ````
+
+##### `GET /messages`
+
+Retrieve a list of messages from a server
+
+###### Query parameters
+
+| Parameter | Type   | Required? | Default |
+|-----------|--------|-----------|---------|
+| server    | Int    | Yes       |         |
+| limit     | Int    | No        | 100     |
+| offset    | Int    | No        | 0       |
+
+**NOTE**: The maximum `limit` that can be set is 1000.
+
+###### Sample response
+
+Status: `200 OK`
+
+````JSON
+[
+  {
+    "id": 1,
+    "content": "Hello",
+    "user": {
+      "id": 1,
+      "username": "ben",
+      "status": "ONLINE"
+    }
+  }
+]
+````
