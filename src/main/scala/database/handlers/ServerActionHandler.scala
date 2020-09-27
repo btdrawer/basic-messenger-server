@@ -109,21 +109,26 @@ object ServerActionHandler extends ActionHandler {
       case None => throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     }
 
-  def getServerMessages(id: Int, limit: Int, offset: Int)(implicit connection: Connection): List[ChildMessage] =
-    runAndIterate(
+  def getServerMessages(id: Int, limit: Int = 100, offset: Int = 0)
+                       (implicit connection: Connection): List[ChildMessage] = {
+    if (limit < 0 || limit > 1000) throw ApiException(FailureMessages.BAD_LIMIT)
+    else if (offset < 0) throw ApiException(FailureMessages.BAD_OFFSET)
+    else runAndIterate(
       ServerQueries.getServerMessages,
       List(id, limit, offset),
-      resultSet => ChildMessage(
-        id = resultSet.getInt(1),
-        content = resultSet.getString(2),
-        sender = ChildUser(
-          id = resultSet.getInt(3),
-          username = resultSet.getString(4),
-          status = Status.withName(resultSet.getString(5))
-        ),
-        createdAt = resultSet.getTimestamp(7)
-      )
+      resultSet =>
+        ChildMessage(
+          id = resultSet.getInt(1),
+          content = resultSet.getString(2),
+          sender = ChildUser(
+            id = resultSet.getInt(3),
+            username = resultSet.getString(4),
+            status = Status.withName(resultSet.getString(5))
+          ),
+          createdAt = resultSet.getTimestamp(6)
+        )
     )
+  }
 
   def addServerUser(server: Int, member: Int, role: Role.Value = Role.MEMBER)
                    (implicit connection: Connection): Result[NoRootElement] = {

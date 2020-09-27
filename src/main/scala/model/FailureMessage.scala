@@ -59,4 +59,15 @@ object FailureMessages {
     message = "You do not have sufficient permission to complete this action.",
     statusCode = StatusCodes.Forbidden
   )
+
+  final def BAD_LIMIT: FailureMessage = FailureMessage(
+    code = "BAD_LIMIT",
+    message = "The limit must have a value between 0 and 1000, or be left blank.",
+    statusCode = StatusCodes.BadRequest
+  )
+  final def BAD_OFFSET: FailureMessage = FailureMessage(
+    code = "BAD_OFFSET",
+    message = "The offset must be at least 0, or left blank.",
+    statusCode = StatusCodes.BadRequest
+  )
 }

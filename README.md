@@ -559,12 +559,9 @@ Status: `200 OK`
     "address": "exampleserver"
   },
   "sender": {
-    "user": {
-      "id": 1,
-      "username": "ben",
-      "status": "ONLINE"
-    },
-    "role": "ADMIN"
+    "id": 1,
+    "username": "ben",
+    "status": "ONLINE"
   },
   "createdAt": 16011364370000
 }

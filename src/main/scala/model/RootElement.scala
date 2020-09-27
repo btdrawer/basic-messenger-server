@@ -45,6 +45,6 @@ case class Message(
   id: Int,
   content: String,
   server: ChildServer,
-  sender: ServerUserRole,
+  sender: ChildUser,
   createdAt: Timestamp
 ) extends RootElement

@@ -31,7 +31,13 @@ object ServerQueries {
 
   def getServerMessages: String =
     """
-      |SELECT messages.id AS messageid, content, sender, users.username, users.status, messages."createdAt"
+      |SELECT
+      |   messages.id AS messageid,
+      |   content,
+      |   users.id AS userid,
+      |   users.username,
+      |   users.status,
+      |   messages."createdAt"
       | FROM messages
       | JOIN users ON users.id = messages.sender
       | WHERE messages.server = ?

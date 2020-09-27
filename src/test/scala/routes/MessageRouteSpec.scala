@@ -1,10 +1,9 @@
 package routes
 
 import java.sql.Timestamp
-import java.time.Instant
 
+import akka.http.scaladsl.model.StatusCodes
 import spray.json.enrichAny
-
 import model._
 
 class MessageRouteSpec extends RouteSpec {
@@ -20,7 +19,7 @@ class MessageRouteSpec extends RouteSpec {
         val message = res.result.get
         message.content shouldEqual "Hello world"
         message.server.id shouldEqual 1
-        message.sender.user.id shouldEqual 1
+        message.sender.id shouldEqual 1
         res.message shouldEqual Some("Message sent.")
       }
     }
@@ -47,6 +46,44 @@ class MessageRouteSpec extends RouteSpec {
       request ~> addCredentials(testLogins("moderator")) ~!> routes ~> check {
         responseAs[Result[Message]] shouldEqual Failure(
           "User not found."
+        )
+      }
+    }
+
+    "retrieve a list of messages from a server with default limit and offset parameters" in {
+      Get("/messages?server=1") ~> addCredentials(testLogins("member")) ~!> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[List[ChildMessage]] shouldEqual List(
+          ChildMessage(
+            id = 1,
+            content = "Hello1",
+            sender = ChildUser(
+              id = 1,
+              username = "admin",
+              status = Status.withName("OFFLINE")
+            ),
+            createdAt = Timestamp.valueOf("2020-09-27 11:28:00")
+          ),
+          ChildMessage(
+            id = 2,
+            content = "Hello2",
+            sender = ChildUser(
+              id = 2,
+              username = "moderator",
+              status = Status.withName("OFFLINE")
+            ),
+            createdAt = Timestamp.valueOf("2020-09-27 11:28:00")
+          ),
+          ChildMessage(
+            id = 3,
+            content = "Hello3",
+            sender = ChildUser(
+              id = 3,
+              username = "member",
+              status = Status.withName("OFFLINE")
+            ),
+            createdAt = Timestamp.valueOf("2020-09-27 11:28:00")
+          )
         )
       }
     }

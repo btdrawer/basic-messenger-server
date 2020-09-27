@@ -32,3 +32,10 @@ INSERT INTO server_users ("user", server, role) VALUES (3, 1, 'MEMBER');
 
 INSERT INTO server_users ("user", server, role) VALUES (1, 2, 'ADMIN');
 INSERT INTO server_users ("user", server, role) VALUES (3, 2, 'MEMBER');
+
+INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+    VALUES (1, 'Hello1', 1, 1, '2020-09-27 11:28:00');
+INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+    VALUES (2, 'Hello2', 1, 2, '2020-09-27 11:28:00');
+INSERT INTO messages (id, "content", "server", "sender", "createdAt")
+    VALUES (3, 'Hello3', 1, 3, '2020-09-27 11:28:00');

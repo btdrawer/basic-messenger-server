@@ -49,9 +49,9 @@ trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
 
   // ChildElement
 
-  implicit val childMessageFormat: RootJsonFormat[ChildMessage] = jsonFormat4(ChildMessage)
   implicit val childServerFormat: RootJsonFormat[ChildServer] = jsonFormat3(ChildServer)
   implicit val childUserFormat: RootJsonFormat[ChildUser] = jsonFormat3(ChildUser)
+  implicit val childMessageFormat: RootJsonFormat[ChildMessage] = jsonFormat4(ChildMessage)
 
   // RootElement
 

@@ -26,7 +26,7 @@ object MessageActionHandler extends ActionHandler {
             id = rs.getInt(1),
             content = message.content,
             server,
-            sender = senderDetails,
+            sender = senderDetails.user,
             createdAt = timestamp
           )
         ),
