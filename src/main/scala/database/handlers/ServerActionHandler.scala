@@ -110,7 +110,7 @@ object ServerActionHandler extends ActionHandler {
     }
 
   def addServerUser(server: Int, member: Int, role: Role.Value = Role.MEMBER)
-                   (implicit connection: Connection): Result[NoRootElement] = {
+                   (implicit connection: Connection): Result[NoRootElement] =
     if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else if (!UserActionHandler.userIdExists(member)) throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
@@ -120,10 +120,8 @@ object ServerActionHandler extends ActionHandler {
         message = Some("User added to server.")
       )
     }
-  }
 
-  def updateServer(id: Int, server: UpdatableServer)
-                    (implicit connection: Connection): Result[NoRootElement] = {
+  def updateServer(id: Int, server: UpdatableServer)(implicit connection: Connection): Result[NoRootElement] =
     if (!serverIdExists(id)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.updateServer, server.toParameterList :+ id)
@@ -132,7 +130,6 @@ object ServerActionHandler extends ActionHandler {
         message = Some("Server updated.")
       )
     }
-  }
 
   def updateUserRole(server: Int, user: Int, role: Role.Value)
                     (implicit connection: Connection): Result[NoRootElement] =

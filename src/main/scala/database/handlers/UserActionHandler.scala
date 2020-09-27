@@ -7,9 +7,8 @@ import database.queries.UserQueries
 import authentication.{AuthData, HashPassword}
 
 object UserActionHandler extends ActionHandler {
-  def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] = {
-    val resultSet = runAndGetFirst(UserQueries.getAuthData, List(username))
-    resultSet match {
+  def getAuthData(username: String)(implicit connection: Connection): Option[AuthData] =
+    runAndGetFirst(UserQueries.getAuthData, List(username)) match {
       case Some(rs) => Some(
         AuthData(
           id = rs.getInt(1),
@@ -19,7 +18,6 @@ object UserActionHandler extends ActionHandler {
       )
       case None => throw ApiException(FailureMessages.LOGIN_INCORRECT)
     }
-  }
 
   def usernameExists(username: String)(implicit connection: Connection): Boolean =
     runAndGetFirst(UserQueries.checkUsernameExists, List(username)).nonEmpty
