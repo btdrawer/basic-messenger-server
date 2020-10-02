@@ -1,11 +1,9 @@
-package model.converters
+package model
 
 import java.sql.Timestamp
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
-
-import model._
 
 /*
   EnumJsonConverter class

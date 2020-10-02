@@ -3,9 +3,8 @@ package routes
 import java.sql.Connection
 
 import akka.http.scaladsl.server.Route
-
 import authentication.Directives
-import model.converters.JsonConverters
+import model.JsonConverters
 
 import scala.concurrent.ExecutionContext
 
