@@ -29,16 +29,6 @@ class TimestampJsonConverter extends RootJsonFormat[Timestamp] {
   }
 }
 
-class ServerMessageFormat extends RootJsonFormat[ServerMessage] with DefaultJsonProtocol {
-  override def write(obj: ServerMessage): JsValue = JsObject(
-    ("id", JsNumber(obj.id)),
-    ("content", JsString(obj.content)),
-    ("server", JsObject())
-  )
-
-  override def read(json: JsValue): ServerMessage = ???
-}
-
 trait JsonConverters extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val timestampFormat: RootJsonFormat[Timestamp] = new TimestampJsonConverter
 
