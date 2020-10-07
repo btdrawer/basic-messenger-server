@@ -1,9 +1,8 @@
 package authentication
 
-import java.sql.Connection
-
 import akka.http.scaladsl.server.directives.Credentials
 import akka.http.scaladsl.server.directives.Credentials._
+import com.zaxxer.hikari.HikariDataSource
 
 import database.handlers.{ServerActionHandler, UserActionHandler}
 import model.{ApiException, FailureMessages, Role}
@@ -11,7 +10,7 @@ import model.{ApiException, FailureMessages, Role}
 case class AuthData(id: Int, password: String, salt: String)
 
 object BasicAuthenticator {
-  private def verify(p: Provided, username: String)(implicit connection: Connection): Option[Int] = {
+  private def verify(p: Provided, username: String)(implicit connectionPool: HikariDataSource): Option[Int] = {
     val authData = UserActionHandler.getAuthData(username)
     authData match {
       case Some(d) =>
@@ -21,7 +20,7 @@ object BasicAuthenticator {
     }
   }
 
-  def apply(credentials: Credentials)(implicit connection: Connection): Option[Int] = credentials match {
+  def apply(credentials: Credentials)(implicit connectionPool: HikariDataSource): Option[Int] = credentials match {
     case p @ Provided(username) => verify(p, username)
     case _ => throw ApiException(FailureMessages.LOGIN_INCORRECT)
   }
@@ -32,7 +31,7 @@ object RoleAuthenticator {
     roles: List[Role.Value],
     server: Int,
     user: Int
-  )(implicit connection: Connection): Option[Int] = {
+  )(implicit connectionPool: HikariDataSource): Option[Int] = {
     val serverIdExists = ServerActionHandler.serverIdExists(server)
     if (!serverIdExists) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
@@ -44,7 +43,7 @@ object RoleAuthenticator {
 
   def apply(roles: List[Role.Value], server: Int)
            (credentials: Credentials)
-           (implicit connection: Connection): Option[Int] = BasicAuthenticator(credentials) match {
+           (implicit connectionPool: HikariDataSource): Option[Int] = BasicAuthenticator(credentials) match {
     case Some(user) => hasCorrectRole(roles, server, user)
     case _ => throw ApiException(FailureMessages.LOGIN_INCORRECT)
   }

@@ -1,16 +1,15 @@
 package routes
 
-import java.sql.Connection
-
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import com.zaxxer.hikari.HikariDataSource
 
 import model._
 import database.handlers.ServerActionHandler
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ServerRouteHandler()(implicit connection: Connection, executionContext: ExecutionContext)
+case class ServerRouteHandler()(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends RouteHandler {
   def routes: Route =
     pathPrefix("servers") {

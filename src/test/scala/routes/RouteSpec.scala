@@ -1,6 +1,6 @@
 package routes
 
-import java.sql.Connection
+import java.sql.{Connection, DriverManager}
 
 import akka.http.scaladsl.model.headers.BasicHttpCredentials
 import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpRequest, MediaTypes}
@@ -9,6 +9,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.BeforeAndAfterEach
+
 import app.App
 import authentication.HashPassword
 import model.JsonConverters
@@ -36,7 +37,13 @@ class RouteSpec extends AnyWordSpec
 }
 
 trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
-  implicit def connection: Connection = App.connection
+  implicit def connection: Connection = {
+    val host = System.getenv("DB_HOST")
+    val url = s"jdbc:postgresql://$host"
+    val username = System.getenv("DB_USERNAME")
+    val password = System.getenv("DB_PASSWORD")
+    DriverManager.getConnection(url, username, password)
+  }
 
   def testLogins: Map[String, BasicHttpCredentials] = Map[String, BasicHttpCredentials](
     "admin" -> BasicHttpCredentials("admin", "Password222"),

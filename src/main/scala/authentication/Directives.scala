@@ -1,13 +1,12 @@
 package authentication
 
-import java.sql.Connection
-
 import akka.http.scaladsl.server.Directives.authenticateBasic
 import akka.http.scaladsl.server.directives.AuthenticationDirective
+import com.zaxxer.hikari.HikariDataSource
 
 import model.Role
 
-class Directives(implicit connection: Connection) {
+class Directives(implicit connectionPool: HikariDataSource) {
   final def REALM: String = "secure site"
 
   private def authenticateRoles(roles: List[Role.Value], server: String): AuthenticationDirective[Int] =

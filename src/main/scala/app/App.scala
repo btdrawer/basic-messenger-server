@@ -1,12 +1,12 @@
 package app
 
-import java.sql.{Connection, DriverManager}
-
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
+import com.zaxxer.hikari.HikariDataSource
+
 import model.{ApiException, Failure, JsonConverters}
 import routes._
 
@@ -18,12 +18,18 @@ object App extends Directives with JsonConverters {
 
   implicit def executionContext: ExecutionContextExecutor = system.executionContext
 
-  implicit def connection: Connection = {
+  implicit def connectionPool: HikariDataSource = {
     val host = System.getenv("DB_HOST")
+    val url = s"jdbc:postgresql://$host"
     val username = System.getenv("DB_USERNAME")
     val password = System.getenv("DB_PASSWORD")
-    val url = s"jdbc:postgresql://$host"
-    DriverManager.getConnection(url, username, password)
+    val maximumPoolSize = System.getenv("DB_CONNECTION_MAX_POOL_SIZE").toInt
+    val dataSource: HikariDataSource = new HikariDataSource()
+    dataSource.setJdbcUrl(url)
+    dataSource.setUsername(username)
+    dataSource.setPassword(password)
+    dataSource.setMaximumPoolSize(maximumPoolSize)
+    dataSource
   }
 
   private def exceptionHandler: ExceptionHandler = ExceptionHandler {
@@ -48,12 +54,15 @@ object App extends Directives with JsonConverters {
     Http().newServerAt(host, port.toInt).bind(routes)
   }
 
+  private def terminateServer(server: Future[Http.ServerBinding]): Unit =
+    server
+      .flatMap(_.unbind())
+      .onComplete(_ => system.terminate())
+
   def main(args: Array[String]): Unit = {
     val server = createServer()
     println(s"Server online, press RETURN to stop...")
     StdIn.readLine()
-    server
-      .flatMap(_.unbind())
-      .onComplete(_ => system.terminate())
+    terminateServer(server)
   }
 }

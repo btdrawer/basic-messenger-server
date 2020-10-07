@@ -2,6 +2,7 @@ package database.handlers
 
 import java.sql.{Connection, PreparedStatement, ResultSet}
 
+import com.zaxxer.hikari.HikariDataSource
 import model.JsonConverters
 
 import scala.annotation.tailrec
@@ -22,12 +23,17 @@ trait ActionHandler extends JsonConverters {
     statement
   }
 
-  private def runQuery(query: String, parameters: List[Any])(implicit connection: Connection): ResultSet = {
+  private def runQuery(query: String, parameters: List[Any])
+                      (implicit connectionPool: HikariDataSource): ResultSet = {
+    implicit val connection: Connection = connectionPool.getConnection()
     val statement = prepareStatement(query, parameters)
-    statement.executeQuery()
+    val resultSet = statement.executeQuery()
+    connection.close()
+    resultSet
   }
 
-  def runAndGetFirst(query: String, parameters: List[Any])(implicit connection: Connection): Option[ResultSet] = {
+  def runAndGetFirst(query: String, parameters: List[Any])
+                    (implicit connectionPool: HikariDataSource): Option[ResultSet] = {
     val resultSet = runQuery(query, parameters)
     resultSet.first()
     if (resultSet.getRow < 1) None
@@ -43,13 +49,16 @@ trait ActionHandler extends JsonConverters {
     query: String,
     parameters: List[Any],
     iterator: ResultSet => T
-  )(implicit connection: Connection): List[T] = {
+  )(implicit connectionPool: HikariDataSource): List[T] = {
     val resultSet = runQuery(query, parameters)
     iterateResultSet(List[T](), resultSet, iterator)
   }
 
-  def runUpdate(query: String, parameters: List[Any])(implicit connection: Connection): Int = {
+  def runUpdate(query: String, parameters: List[Any])(implicit connectionPool: HikariDataSource): Int = {
+    implicit val connection: Connection = connectionPool.getConnection()
     val statement = prepareStatement(query, parameters)
-    statement.executeUpdate()
+    val rowsUpdated = statement.executeUpdate()
+    connection.close()
+    rowsUpdated
   }
 }

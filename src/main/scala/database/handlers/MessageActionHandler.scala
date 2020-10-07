@@ -1,14 +1,16 @@
 package database.handlers
 
-import java.sql.{Connection, Timestamp}
+import java.sql.Timestamp
 import java.time.Instant
+
+import com.zaxxer.hikari.HikariDataSource
 
 import model._
 import database.queries.MessageQueries
 
 object MessageActionHandler extends ActionHandler {
   def createServerMessage(message: CreatableMessage, server: Int, sender: Int)
-                         (implicit connection: Connection): Result[ServerMessage] = {
+                         (implicit connectionPool: HikariDataSource): Result[ServerMessage] = {
     val serverDetails = ServerActionHandler.getServerAsChildElement(server)
     val senderDetails = UserActionHandler.getUserAsChildElement(sender)
     val timestamp = Timestamp.from(Instant.EPOCH)
@@ -38,7 +40,7 @@ object MessageActionHandler extends ActionHandler {
   }
 
   def createDirectMessage(message: CreatableMessage, recipient: Int, sender: Int)
-                         (implicit connection: Connection): Result[DirectMessage] = {
+                         (implicit connectionPool: HikariDataSource): Result[DirectMessage] = {
     val recipientDetails = UserActionHandler.getUserAsChildElement(recipient)
     val senderDetails = UserActionHandler.getUserAsChildElement(sender)
     val timestamp = Timestamp.from(Instant.EPOCH)
@@ -68,7 +70,7 @@ object MessageActionHandler extends ActionHandler {
   }
 
   private def getMessages(query: String, parameters: List[Any], limit: Int, offset: Int)
-                         (implicit connection: Connection): List[ChildMessage] =
+                         (implicit connectionPool: HikariDataSource): List[ChildMessage] =
     if (limit < 0 || limit > 1000) throw ApiException(FailureMessages.BAD_LIMIT)
     else if (offset < 0) throw ApiException(FailureMessages.BAD_OFFSET)
     else runAndIterate(
@@ -88,8 +90,7 @@ object MessageActionHandler extends ActionHandler {
     )
 
   def getServerMessages(id: Int, limit: Int = 100, offset: Int = 0)
-                       (implicit connection: Connection): List[ChildMessage] =
-    getMessages(
+                       (implicit connectionPool: HikariDataSource): List[ChildMessage] = getMessages(
       MessageQueries.getServerMessages,
       List(id, limit, offset),
       limit,
@@ -97,8 +98,7 @@ object MessageActionHandler extends ActionHandler {
     )
 
   def getDirectMessages(user1: Int, user2: Int, limit: Int = 100, offset: Int = 0)
-                       (implicit connection: Connection): List[ChildMessage] =
-    getMessages(
+                       (implicit connectionPool: HikariDataSource): List[ChildMessage] = getMessages(
       MessageQueries.getDirectMessages,
       List(user1, user2, user2, user1, limit, offset),
       limit,

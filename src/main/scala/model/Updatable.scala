@@ -1,12 +1,12 @@
 package model
 
-import java.sql.Connection
+import com.zaxxer.hikari.HikariDataSource
 
 import authentication.HashPassword
 import database.handlers.UserActionHandler.{checkPasswordIsValid, usernameExists}
 
 sealed trait Updatable {
-  def toParameterList(implicit connection: Connection): List[Any]
+  def toParameterList(implicit connectionPool: HikariDataSource): List[Any]
 }
 
 case class UpdatableUser(
@@ -15,7 +15,7 @@ case class UpdatableUser(
   status: Option[Status.Value],
   passwordReset: Option[CreatablePasswordReset]
 ) extends Updatable {
-  override def toParameterList(implicit connection: Connection): List[Any] = {
+  override def toParameterList(implicit connectionPool: HikariDataSource): List[Any] = {
     val username = this.username.flatMap(u =>
       if (usernameExists(u)) throw ApiException(FailureMessages.USERNAME_EXISTS)
       else Some(u)
@@ -48,5 +48,5 @@ case class UpdatableUser(
 }
 
 case class UpdatableServer(name: Option[String]) extends Updatable {
-  override def toParameterList(implicit connection: Connection): List[Any] = List(name.orNull)
+  override def toParameterList(implicit connectionPool: HikariDataSource): List[Any] = List(name.orNull)
 }
