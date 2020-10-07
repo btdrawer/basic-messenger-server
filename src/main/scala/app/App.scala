@@ -18,7 +18,7 @@ object App extends Directives with JsonConverters {
 
   implicit def executionContext: ExecutionContextExecutor = system.executionContext
 
-  implicit def connectionPool: HikariDataSource = {
+  implicit def launchConnectionPool(): HikariDataSource = {
     val host = System.getenv("DB_HOST")
     val url = s"jdbc:postgresql://$host"
     val username = System.getenv("DB_USERNAME")
@@ -40,7 +40,7 @@ object App extends Directives with JsonConverters {
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
   }
 
-  def routes: Route = handleExceptions(exceptionHandler) {
+  def routes(implicit connectionPool: HikariDataSource): Route = handleExceptions(exceptionHandler) {
     concat(
       ServerRouteHandler().routes,
       UserRouteHandler().routes,
@@ -49,6 +49,7 @@ object App extends Directives with JsonConverters {
   }
 
   private def createServer(): Future[Http.ServerBinding] = {
+    implicit val connectionPool: HikariDataSource = launchConnectionPool()
     val host = System.getenv("SERVER_HOST")
     val port = System.getenv("SERVER_PORT")
     Http().newServerAt(host, port.toInt).bind(routes)

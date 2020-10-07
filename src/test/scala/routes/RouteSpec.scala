@@ -9,6 +9,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.BeforeAndAfterEach
+import com.zaxxer.hikari.HikariDataSource
 
 import app.App
 import authentication.HashPassword
@@ -22,6 +23,8 @@ class RouteSpec extends AnyWordSpec
   with JsonConverters
   with DatabaseSeeder
   with Model {
+  implicit val connectionPool: HikariDataSource = App.launchConnectionPool()
+
   lazy val routes: Route = App.routes
 
   private def createRoute(requestBuilder: RequestBuilder, route: String, params: String): HttpRequest = {
