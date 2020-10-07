@@ -40,14 +40,12 @@ object App extends Directives with JsonConverters {
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
   }
 
-  def routes: Route = {
-    handleExceptions(exceptionHandler) {
-      concat(
-        ServerRouteHandler().routes,
-        UserRouteHandler().routes,
-        MessageRouteHandler().routes
-      )
-    }
+  def routes: Route = handleExceptions(exceptionHandler) {
+    concat(
+      ServerRouteHandler().routes,
+      UserRouteHandler().routes,
+      MessageRouteHandler().routes
+    )
   }
 
   private def createServer(): Future[Http.ServerBinding] = {
