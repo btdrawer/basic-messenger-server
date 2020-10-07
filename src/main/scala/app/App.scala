@@ -18,7 +18,7 @@ object App extends Directives with JsonConverters {
 
   implicit def executionContext: ExecutionContextExecutor = system.executionContext
 
-  implicit lazy val launchConnectionPool: HikariDataSource = {
+  implicit lazy val connectionPool: HikariDataSource = {
     val host = System.getenv("DB_HOST")
     val url = s"jdbc:postgresql://$host"
     val username = System.getenv("DB_USERNAME")
