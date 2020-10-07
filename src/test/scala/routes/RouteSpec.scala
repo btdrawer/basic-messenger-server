@@ -23,8 +23,6 @@ class RouteSpec extends AnyWordSpec
   with JsonConverters
   with DatabaseSeeder
   with Model {
-  implicit val connectionPool: HikariDataSource = App.launchConnectionPool()
-
   lazy val routes: Route = App.routes
 
   private def createRoute(requestBuilder: RequestBuilder, route: String, params: String): HttpRequest = {
