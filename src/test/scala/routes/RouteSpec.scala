@@ -9,7 +9,6 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.BeforeAndAfterEach
-import com.zaxxer.hikari.HikariDataSource
 
 import app.App
 import authentication.HashPassword

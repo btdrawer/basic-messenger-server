@@ -18,7 +18,7 @@ object App extends Directives with JsonConverters {
 
   implicit def executionContext: ExecutionContextExecutor = system.executionContext
 
-  private def launchConnectionPool(): HikariDataSource = {
+  implicit lazy val launchConnectionPool: HikariDataSource = {
     val host = System.getenv("DB_HOST")
     val url = s"jdbc:postgresql://$host"
     val username = System.getenv("DB_USERNAME")
@@ -41,7 +41,6 @@ object App extends Directives with JsonConverters {
   }
 
   def routes: Route = {
-    implicit val connectionPool: HikariDataSource = launchConnectionPool()
     handleExceptions(exceptionHandler) {
       concat(
         ServerRouteHandler().routes,
