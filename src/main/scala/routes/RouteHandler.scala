@@ -10,5 +10,5 @@ import scala.concurrent.ExecutionContext
 
 abstract class RouteHandler(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends Directives with JsonConverters {
-  def routes: Route
+  val routes: Route
 }

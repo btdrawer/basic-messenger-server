@@ -11,8 +11,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends RouteHandler {
-  def routes: Route = pathPrefix("users") {
-    concat(
+
+  override val routes: Route =
+    pathPrefix("users") {
       post {
         decodeRequest {
           entity(as[CreatableUser]) { user =>
@@ -20,14 +21,12 @@ case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executi
             onComplete(result)(complete(_))
           }
         }
-      },
-      get {
-        path(Segment) { id =>
-          val result: Future[Result[User]] = Future(UserActionHandler.getUser(id.toInt))
+      } ~ get {
+        path(IntNumber) { id =>
+          val result: Future[Result[User]] = Future(UserActionHandler.getUser(id))
           onComplete(result)(complete(_))
         }
-      },
-      put {
+      } ~ put {
         authenticateUser { id =>
           decodeRequest {
             entity(as[UpdatableUser]) { user =>
@@ -36,13 +35,12 @@ case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executi
             }
           }
         }
-      },
-      delete {
+      } ~ delete {
         authenticateUser { id =>
           val result: Future[Result[NoRootElement]] = Future(UserActionHandler.deleteUser(id))
           onComplete(result)(complete(_))
         }
       }
-    )
   }
+
 }

@@ -11,86 +11,79 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ServerRouteHandler()(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends RouteHandler {
-  def routes: Route =
+
+  override val routes: Route =
     pathPrefix("servers") {
-      concat(
-        post {
-          authenticateUser { id =>
+      post {
+        authenticateUser { id =>
+          decodeRequest {
+            entity(as[CreatableServer]) { server =>
+              val result: Future[Result[Server]] = Future(ServerActionHandler.createServer(server, id))
+              onComplete(result)(complete(_))
+            }
+          }
+        }
+      } ~ get {
+        path("search" / Segment) { name =>
+          val result: Future[List[ChildServer]] = Future(ServerActionHandler.findServers(name))
+          onComplete(result)(complete(_))
+        }
+      } ~ get {
+        path("id" / IntNumber) { id =>
+          val result: Future[Result[Server]] = Future(ServerActionHandler.getServerById(id))
+          onComplete(result)(complete(_))
+        }
+      } ~ get {
+        path("address" / Segment) { address =>
+          val result: Future[Result[Server]] = Future(ServerActionHandler.getServerByAddress(address))
+          onComplete(result)(complete(_))
+        }
+      } ~ put {
+        path(IntNumber) { id =>
+          authenticateAdmin(id) { _ =>
             decodeRequest {
-              entity(as[CreatableServer]) { server =>
-                val result: Future[Result[Server]] = Future(ServerActionHandler.createServer(server, id))
+              entity(as[UpdatableServer]) { server =>
+                val result: Future[Result[NoRootElement]] =
+                  Future(ServerActionHandler.updateServer(id, server))
                 onComplete(result)(complete(_))
               }
             }
           }
-        },
-        get {
-          path("search" / Segment) { name =>
-            val result: Future[List[ChildServer]] = Future(ServerActionHandler.findServers(name))
+        }
+      } ~ put {
+        path(IntNumber / "users" / IntNumber) { (server, user) =>
+          authenticateModerator(server) { _ =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActionHandler.addServerUser(server, user))
             onComplete(result)(complete(_))
           }
-        },
-        get {
-          path("id" / Segment) { id =>
-            val result: Future[Result[Server]] = Future(ServerActionHandler.getServerById(id.toInt))
+        }
+      } ~ put {
+        path(IntNumber / "users" / IntNumber / "roles" / Segment) { (server, member, role) =>
+          authenticateAdmin(server) { _ =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActionHandler.updateUserRole(server, member, Role.withName(role)))
             onComplete(result)(complete(_))
           }
-        },
-        get {
-          path("address" / Segment) { address =>
-            val result: Future[Result[Server]] = Future(ServerActionHandler.getServerByAddress(address))
+        }
+      } ~ delete {
+        path(IntNumber) { id =>
+          authenticateAdmin(id) { _ =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActionHandler.deleteServer(id))
             onComplete(result)(complete(_))
           }
-        },
-        put {
-          path(Segment) { id =>
-            authenticateAdmin(id) { _ =>
-              decodeRequest {
-                entity(as[UpdatableServer]) { server =>
-                  val result: Future[Result[NoRootElement]] =
-                    Future(ServerActionHandler.updateServer(id.toInt, server))
-                  onComplete(result)(complete(_))
-                }
-              }
-            }
+        }
+      } ~ delete {
+        path(IntNumber / "users" / IntNumber) { (server, user) =>
+          authenticateModerator(server) { _ =>
+            val result: Future[Result[NoRootElement]] =
+              Future(ServerActionHandler.removeServerUser(server, user))
+            onComplete(result)(complete(_))
           }
-        },
-        put {
-          path(Segment / "users" / Segment) { (server, user) =>
-            authenticateModerator(server) { _ =>
-              val result: Future[Result[NoRootElement]] =
-                Future(ServerActionHandler.addServerUser(server.toInt, user.toInt))
-              onComplete(result)(complete(_))
-            }
-          }
-        },
-        put {
-          path(Segment / "users" / Segment / "roles" / Segment) { (server, member, role) =>
-            authenticateAdmin(server) { _ =>
-              val result: Future[Result[NoRootElement]] =
-                Future(ServerActionHandler.updateUserRole(server.toInt, member.toInt, Role.withName(role)))
-              onComplete(result)(complete(_))
-            }
-          }
-        },
-        delete {
-          path(Segment) { id =>
-            authenticateAdmin(id) { _ =>
-              val result: Future[Result[NoRootElement]] = Future(ServerActionHandler.deleteServer(id.toInt))
-              onComplete(result)(complete(_))
-            }
-          }
-        },
-        delete {
-          path(Segment / "users" / Segment) { (server, user) =>
-            authenticateModerator(server) { _ =>
-              val result: Future[Result[NoRootElement]] =
-                Future(ServerActionHandler.removeServerUser(server.toInt, user.toInt))
-              onComplete(result)(complete(_))
-            }
-          }
-        },
-      )
+        }
+      }
     }
+
   }
 

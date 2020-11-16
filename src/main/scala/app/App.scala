@@ -14,9 +14,8 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
 object App extends Directives with JsonConverters {
-  implicit def system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "my-system")
-
-  implicit def executionContext: ExecutionContextExecutor = system.executionContext
+  implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "BasicMessenger")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   implicit lazy val connectionPool: HikariDataSource = {
     val host = System.getenv("DB_HOST")
@@ -32,7 +31,7 @@ object App extends Directives with JsonConverters {
     dataSource
   }
 
-  private def exceptionHandler: ExceptionHandler = ExceptionHandler {
+  private val exceptionHandler: ExceptionHandler = ExceptionHandler {
     case ApiException(err) =>
       complete(err.statusCode -> Failure(err.message))
     case err =>
@@ -40,12 +39,10 @@ object App extends Directives with JsonConverters {
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
   }
 
-  def routes: Route = handleExceptions(exceptionHandler) {
-    concat(
-      ServerRouteHandler().routes,
-      UserRouteHandler().routes,
-      MessageRouteHandler().routes
-    )
+  val routes: Route = handleExceptions(exceptionHandler) {
+    ServerRouteHandler().routes ~
+    UserRouteHandler().routes ~
+    MessageRouteHandler().routes
   }
 
   private def createServer(): Future[Http.ServerBinding] = {
