@@ -11,7 +11,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends RouteHandler {
-
   override val routes: Route =
     pathPrefix("users") {
       post {
@@ -41,6 +40,5 @@ case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executi
           onComplete(result)(complete(_))
         }
       }
-  }
-
+    }
 }

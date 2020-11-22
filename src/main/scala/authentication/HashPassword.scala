@@ -9,12 +9,12 @@ import javax.crypto.spec.PBEKeySpec
 case class SaltedPassword(password: String, salt: String)
 
 object HashPassword {
-  private def encoder: Base64.Encoder = Base64.getEncoder
-  private def decoder: Base64.Decoder = Base64.getDecoder
+  private val encoder: Base64.Encoder = Base64.getEncoder
+  private val decoder: Base64.Decoder = Base64.getDecoder
 
-  private def SALT_SIZE: Int = 16
-  private def ITERATION_COUNT: Int = 65536
-  private def KEY_LENGTH = 128
+  private val SALT_SIZE: Int = 16
+  private val ITERATION_COUNT: Int = 65536
+  private val KEY_LENGTH = 128
 
   private def generateSalt(): Array[Byte] = {
     val secureRandom: SecureRandom = new SecureRandom()

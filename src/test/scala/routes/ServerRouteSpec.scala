@@ -6,7 +6,7 @@ import spray.json.enrichAny
 import model._
 
 class ServerRouteSpec extends RouteSpec {
-  private def exampleServerResponseModel: Result[Server] = Success(
+  private val exampleServerResponseModel: Result[Server] = Success(
     result = Some(servers.head),
     message = None
   )

@@ -8,8 +8,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.BeforeAndAfterEach
-
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import app.App
 import authentication.HashPassword
 import model.JsonConverters
@@ -36,8 +35,11 @@ class RouteSpec extends AnyWordSpec
     createRoute(requestBuilder = Put, route, params)
 }
 
-trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
-  implicit def connection: Connection = {
+trait DatabaseSeeder
+  extends AnyWordSpec
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
+  implicit lazy val connection: Connection = {
     val host = System.getenv("DB_HOST")
     val url = s"jdbc:postgresql://$host"
     val username = System.getenv("DB_USERNAME")
@@ -45,7 +47,7 @@ trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
     DriverManager.getConnection(url, username, password)
   }
 
-  def testLogins: Map[String, BasicHttpCredentials] = Map[String, BasicHttpCredentials](
+  val testLogins: Map[String, BasicHttpCredentials] = Map[String, BasicHttpCredentials](
     "admin" -> BasicHttpCredentials("admin", "Password222"),
     "moderator" -> BasicHttpCredentials("moderator", "Password223"),
     "member" -> BasicHttpCredentials("member", "Password224"),
@@ -63,6 +65,9 @@ trait DatabaseSeeder extends AnyWordSpec with BeforeAndAfterEach {
       statement.setString(index, passwords(i - 1).salt)
     })
     statement.executeUpdate()
+    statement.close()
     sqlScript.close()
   }
+
+  override protected def afterAll(): Unit = connection.close()
 }

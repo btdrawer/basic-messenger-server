@@ -1,27 +1,27 @@
 package database.queries
 
 object UserQueries {
-  def checkUsernameExists: String = "SELECT * FROM users WHERE username = ?"
+  val checkUsernameExists: String = "SELECT * FROM users WHERE username = ?"
 
-  def createUser: String =
+  val createUser: String =
     """
       |INSERT INTO users (username, password, salt, status, password_reset_question, password_reset_answer)
       | VALUES (?, ?, ?, 'OFFLINE', ?, ?)
       | RETURNING id, username, status
       |""".stripMargin
 
-  def getUser: String = "SELECT username, status FROM \"users\" WHERE id = ?"
-  def getUserId: String = "SELECT id FROM \"users\" WHERE username = ?"
-  def getAuthData: String = "SELECT id, password, salt FROM \"users\" WHERE username = ?"
+  val getUser: String = "SELECT username, status FROM \"users\" WHERE id = ?"
+  val getUserId: String = "SELECT id FROM \"users\" WHERE username = ?"
+  val getAuthData: String = "SELECT id, password, salt FROM \"users\" WHERE username = ?"
 
-  def getUserServers: String =
+  val getUserServers: String =
     """
       |SELECT servers.id AS serverid, name, address, role
       | FROM servers
       | JOIN server_users ON servers.id = server_users.server
       | WHERE server_users.user = ?
       |""".stripMargin
-  def getUserServer: String =
+  val getUserServer: String =
     """
       |SELECT servers.id AS serverid, name, address, role
       | FROM servers
@@ -29,7 +29,7 @@ object UserQueries {
       | WHERE servers.id = ?
       |""".stripMargin
 
-  def updateUser: String =
+  val updateUser: String =
     """
       |UPDATE users
       | SET username = COALESCE(?, username),
@@ -41,7 +41,7 @@ object UserQueries {
       | WHERE id = ?
       |""".stripMargin
 
-  def deleteUser: String =
+  val deleteUser: String =
     """
       |DELETE FROM direct_messages WHERE sender = ?;
       |DELETE FROM direct_messages WHERE recipient = ?;

@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import model._
 
 trait Model {
-  def servers = List(
+  val servers = List(
     Server(
       id = 1,
       name = "Example Server",
@@ -95,7 +95,7 @@ trait Model {
     ),
   )
 
-  def directMessages = List(
+  val directMessages = List(
     ChildMessage(
       id = 1,
       content = "Hello1",

@@ -11,7 +11,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext)
   extends RouteHandler {
-
   override val routes: Route =
     pathPrefix("messages") {
       pathPrefix("server" / IntNumber) { server =>
@@ -69,5 +68,4 @@ case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, exec
         }
       }
     }
-
 }

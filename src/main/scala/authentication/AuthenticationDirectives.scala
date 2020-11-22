@@ -7,7 +7,7 @@ import com.zaxxer.hikari.HikariDataSource
 import model.Role
 
 class AuthenticationDirectives(implicit connectionPool: HikariDataSource) {
-  final def REALM: String = "basic-messenger"
+  final val REALM: String = "basic-messenger"
 
   private def authenticateRoles(roles: List[Role.Value], server: Int): AuthenticationDirective[Int] =
     authenticateBasic(realm = REALM, RoleAuthenticator(roles, server))

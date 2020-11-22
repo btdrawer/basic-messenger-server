@@ -6,7 +6,7 @@ import spray.json.enrichAny
 import model._
 
 class MessageRouteSpec extends RouteSpec {
-  private def serverMessages: List[ChildMessage] = servers.head.messages
+  private val serverMessages: List[ChildMessage] = servers.head.messages
 
   "The message routes" should {
     "create a new server message" in {

@@ -1,21 +1,21 @@
 package database.queries
 
 object MessageQueries {
-  def createServerMessage: String =
+  val createServerMessage: String =
     """
       |INSERT INTO server_messages (content, server, sender, "createdAt")
       | VALUES (?, ?, ?, ?)
       | RETURNING id, content
       |""".stripMargin
 
-  def createDirectMessage: String =
+  val createDirectMessage: String =
     """
       |INSERT INTO direct_messages (content, recipient, sender, "createdAt")
       | VALUES (?, ?, ?, ?)
       | RETURNING id, content
       |""".stripMargin
 
-  def getServerMessages: String =
+  val getServerMessages: String =
     """
       |SELECT
       |   server_messages.id AS messageid,
@@ -30,7 +30,7 @@ object MessageQueries {
       | LIMIT ? OFFSET ?
       |""".stripMargin
 
-  def getDirectMessages: String =
+  val getDirectMessages: String =
     """
       |SELECT
       |   direct_messages.id AS messageid,
