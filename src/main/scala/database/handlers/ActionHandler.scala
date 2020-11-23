@@ -6,7 +6,7 @@ import com.zaxxer.hikari.HikariDataSource
 import model.JsonConverters
 
 import scala.annotation.tailrec
-import scala.util.Try
+import scala.util.{Failure, Success, Try, Using}
 
 trait ActionHandler extends JsonConverters {
   private def prepareStatement(query: String, parameters: List[Any])(connection: Connection): PreparedStatement = {
@@ -26,14 +26,10 @@ trait ActionHandler extends JsonConverters {
     parameters: List[Any],
     executeStatement: PreparedStatement => T
   )(implicit connectionPool: HikariDataSource): T = {
-    val result = for {
-      connection <- Try(connectionPool.getConnection())
-      statement <- Try(prepareStatement(query, parameters)(connection))
-      res <- Try(executeStatement(statement))
-    } yield {
-      statement.close()
-      connection.close()
-      res
+    val result = Using.Manager { use =>
+      val connection = use(connectionPool.getConnection())
+      val statement = use(prepareStatement(query, parameters)(connection))
+      executeStatement(statement)
     }
     result
       .recover {
