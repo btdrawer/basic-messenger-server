@@ -49,7 +49,7 @@ trait ActionHandler extends JsonConverters {
     parameters: List[Any]
   )(processor: Option[ResultSet] => T)(implicit connectionPool: HikariDataSource): T = {
     val result = Using.Manager { use =>
-      val resultSet = runQuery(query, parameters)
+      val resultSet = use(runQuery(query, parameters))
       resultSet.first()
       val rsOption = {
         if (resultSet.getRow < 1) None
