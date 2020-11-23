@@ -33,10 +33,8 @@ object App extends Directives with JsonConverters {
 
   private val exceptionHandler: ExceptionHandler = ExceptionHandler {
     case ApiException(err) =>
-      connectionPool.close()
       complete(err.statusCode -> Failure(err.message))
     case err =>
-      connectionPool.close()
       err.printStackTrace()
       complete(StatusCodes.InternalServerError -> "Sorry, an error occurred.")
   }
