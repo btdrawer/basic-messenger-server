@@ -44,14 +44,24 @@ trait ActionHandler extends JsonConverters {
   def runUpdate(query: String, parameters: List[Any])(implicit connectionPool: HikariDataSource): Int =
     run(query, parameters, _.executeUpdate())
 
-  def runAndGetFirst(
+  def runAndGetFirst[T](
     query: String,
     parameters: List[Any]
-  )(implicit connectionPool: HikariDataSource): Option[ResultSet] = {
-    val resultSet = runQuery(query, parameters)
-    resultSet.first()
-    if (resultSet.getRow < 1) None
-    else Some(resultSet)
+  )(processor: Option[ResultSet] => T)(implicit connectionPool: HikariDataSource): T = {
+    val result = Using.Manager { use =>
+      val resultSet = runQuery(query, parameters)
+      resultSet.first()
+      val rsOption = {
+        if (resultSet.getRow < 1) None
+        else Some(resultSet)
+      }
+      processor(rsOption)
+    }
+    result
+      .recover {
+        case exception: Exception => throw exception
+      }
+      .get
   }
 
   @tailrec

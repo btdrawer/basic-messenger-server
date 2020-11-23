@@ -8,7 +8,10 @@ import authentication.{AuthData, HashPassword}
 
 object UserActionHandler extends ActionHandler {
   def getAuthData(username: String)(implicit connectionPool: HikariDataSource): Option[AuthData] =
-    runAndGetFirst(UserQueries.getAuthData, List(username)) match {
+    runAndGetFirst(
+      UserQueries.getAuthData,
+      List(username)
+    ) {
       case Some(rs) => Some(
         AuthData(
           id = rs.getInt(1),
@@ -20,10 +23,10 @@ object UserActionHandler extends ActionHandler {
     }
 
   def usernameExists(username: String)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(UserQueries.checkUsernameExists, List(username)).nonEmpty
+    runAndGetFirst(UserQueries.checkUsernameExists, List(username))(_.nonEmpty)
 
   def userIdExists(id: Int)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(UserQueries.getUser, List(id)).nonEmpty
+    runAndGetFirst(UserQueries.getUser, List(id))(_.nonEmpty)
 
   def checkPasswordIsValid(password: String): Boolean =
     password.length > 7 &&
@@ -32,8 +35,10 @@ object UserActionHandler extends ActionHandler {
       password.matches(".*[A-Z].*")
 
   def createUser(user: CreatableUser)(implicit connectionPool: HikariDataSource): Result[User] =
-    if (!checkPasswordIsValid(user.password)) throw ApiException(FailureMessages.PASSWORD_INVALID)
-    else if (usernameExists(user.username)) throw ApiException(FailureMessages.USERNAME_EXISTS)
+    if (!checkPasswordIsValid(user.password))
+      throw ApiException(FailureMessages.PASSWORD_INVALID)
+    else if (usernameExists(user.username))
+      throw ApiException(FailureMessages.USERNAME_EXISTS)
     else {
       val hashedPassword = HashPassword(user.password)
       runAndGetFirst(
@@ -45,7 +50,7 @@ object UserActionHandler extends ActionHandler {
           user.passwordReset.question,
           user.passwordReset.answer
         )
-      ) match {
+      ) {
         case Some(rs) => Success(
           result = Some(
             User(
@@ -76,7 +81,10 @@ object UserActionHandler extends ActionHandler {
     )
 
   def getUser(id: Int)(implicit connectionPool: HikariDataSource): Result[User] =
-    runAndGetFirst(UserQueries.getUser, List(id)) match {
+    runAndGetFirst(
+      UserQueries.getUser,
+      List(id)
+    ) {
       case Some(rs) =>
         val servers = getUserServers(id)
         Success(
@@ -94,7 +102,10 @@ object UserActionHandler extends ActionHandler {
     }
 
   def getUserAsChildElement(id: Int)(implicit connectionPool: HikariDataSource): ChildUser =
-    runAndGetFirst(UserQueries.getUser, List(id)) match {
+    runAndGetFirst(
+      UserQueries.getUser,
+      List(id)
+    ) {
       case Some(rs) => ChildUser(
         id,
         username = rs.getString(1),
@@ -113,7 +124,8 @@ object UserActionHandler extends ActionHandler {
   }
 
   def deleteUser(id: Int)(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!userIdExists(id)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+    if (!userIdExists(id))
+      throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(UserQueries.deleteUser, List(id, id, id, id, id))
       Success(

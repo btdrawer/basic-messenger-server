@@ -9,14 +9,27 @@ import database.queries.ServerQueries
 
 object ServerActionHandler extends ActionHandler {
   def serverIdExists(id: Int)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(ServerQueries.getServerById, List(id)).nonEmpty
+    runAndGetFirst(
+      ServerQueries.getServerById,
+      List(id)
+    )(_.nonEmpty)
 
   private def addressExists(address: String)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(ServerQueries.getServerByAddress, List(address)).nonEmpty
+    runAndGetFirst(
+      ServerQueries.getServerByAddress,
+      List(address)
+    )(_.nonEmpty)
 
   def createServer(server: CreatableServer, creator: Int)(implicit connectionPool: HikariDataSource): Result[Server] =
-    if (addressExists(server.address)) throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
-    else runAndGetFirst(ServerQueries.createServer, List(server.name, server.address)) match {
+    if (addressExists(server.address))
+      throw ApiException(FailureMessages.SERVER_ADDRESS_TAKEN)
+    else runAndGetFirst(
+      ServerQueries.createServer,
+      List(
+        server.name,
+        server.address
+      )
+    ) {
       case Some(rs) =>
         val id = rs.getInt(1)
         addServerUser(id, creator, Role.ADMIN)
@@ -61,9 +74,10 @@ object ServerActionHandler extends ActionHandler {
       )
     )
 
-  private def getServer(queryToRun: () => Option[ResultSet])
-                       (implicit connectionPool: HikariDataSource): Result[Server] =
-    queryToRun() match {
+  private def getServer(
+    resultSetOption: Option[ResultSet]
+  )(implicit connectionPool: HikariDataSource): Result[Server] =
+    resultSetOption match {
       case Some(rs) =>
         val id = rs.getInt(1)
         val users = getServerUsers(id)
@@ -84,13 +98,25 @@ object ServerActionHandler extends ActionHandler {
     }
 
   def getServerById(id: Int)(implicit connectionPool: HikariDataSource): Result[Server] =
-    getServer(() => runAndGetFirst(ServerQueries.getServerById, List(id)))
+    runAndGetFirst(
+      ServerQueries.getServerById,
+      List(id)
+    )(getServer)
 
   def getServerByAddress(address: String)(implicit connectionPool: HikariDataSource): Result[Server] =
-    getServer(() => runAndGetFirst(ServerQueries.getServerByAddress, List(address)))
+    runAndGetFirst(
+      ServerQueries.getServerByAddress,
+      List(address)
+    )(getServer)
 
   def getServerUser(serverId: Int, userId: Int)(implicit connectionPool: HikariDataSource): ServerUserRole =
-    runAndGetFirst(ServerQueries.getServerUser, List(serverId, userId)) match {
+    runAndGetFirst(
+      ServerQueries.getServerUser,
+      List(
+        serverId,
+        userId
+      )
+    ) {
       case Some(rs) => ServerUserRole(
         user = ChildUser(
           id = rs.getInt(1),
@@ -103,7 +129,10 @@ object ServerActionHandler extends ActionHandler {
     }
 
   def getServerAsChildElement(id: Int)(implicit connectionPool: HikariDataSource): ChildServer =
-    runAndGetFirst(ServerQueries.getServerById, List(id)) match {
+    runAndGetFirst(
+      ServerQueries.getServerById,
+      List(id)
+    ) {
       case Some(rs) => ChildServer(
         id,
         name = rs.getString(2),
@@ -112,10 +141,15 @@ object ServerActionHandler extends ActionHandler {
       case None => throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     }
 
-  def addServerUser(server: Int, member: Int, role: Role.Value = Role.MEMBER)
-                   (implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActionHandler.userIdExists(member)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+  def addServerUser(
+    server: Int,
+    member: Int,
+    role: Role.Value = Role.MEMBER
+  )(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
+    if (!serverIdExists(server))
+      throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(member))
+      throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.addServerUser, List(server, member, role.toString))
       Success(
@@ -124,9 +158,12 @@ object ServerActionHandler extends ActionHandler {
       )
     }
 
-  def updateServer(id: Int, server: UpdatableServer)
-                  (implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!serverIdExists(id)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+  def updateServer(
+    id: Int,
+    server: UpdatableServer
+  )(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
+    if (!serverIdExists(id))
+      throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.updateServer, server.toParameterList :+ id)
       Success(
@@ -135,10 +172,15 @@ object ServerActionHandler extends ActionHandler {
       )
     }
 
-  def updateUserRole(server: Int, user: Int, role: Role.Value)
-                    (implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActionHandler.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+  def updateUserRole(
+    server: Int,
+    user: Int,
+    role: Role.Value
+  )(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
+    if (!serverIdExists(server))
+      throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(user))
+      throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.updateUserRole, List(role.toString, server, user))
       Success(
@@ -147,9 +189,14 @@ object ServerActionHandler extends ActionHandler {
       )
     }
 
-  def removeServerUser(server: Int, user: Int)(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!serverIdExists(server)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
-    else if (!UserActionHandler.userIdExists(user)) throw ApiException(FailureMessages.USER_NOT_FOUND)
+  def removeServerUser(
+    server: Int,
+    user: Int
+  )(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
+    if (!serverIdExists(server))
+      throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    else if (!UserActionHandler.userIdExists(user))
+      throw ApiException(FailureMessages.USER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.removeServerUser, List(server, user))
       Success(
@@ -159,7 +206,8 @@ object ServerActionHandler extends ActionHandler {
     }
 
   def deleteServer(id: Int)(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!serverIdExists(id)) throw ApiException(FailureMessages.SERVER_NOT_FOUND)
+    if (!serverIdExists(id))
+      throw ApiException(FailureMessages.SERVER_NOT_FOUND)
     else {
       runUpdate(ServerQueries.deleteServer, List(id, id, id))
       Success(
