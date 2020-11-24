@@ -1,17 +1,17 @@
 package database.handlers
 
 import com.zaxxer.hikari.HikariDataSource
-
 import model._
 import database.queries.UserQueries
 import authentication.{AuthData, HashPassword}
 
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
+
 object UserActionHandler extends ActionHandler {
-  def getAuthData(username: String)(implicit connectionPool: HikariDataSource): Option[AuthData] =
-    runAndGetFirst(
-      UserQueries.getAuthData,
-      List(username)
-    ) {
+  def getAuthData(username: String)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Option[AuthData]] =
+    runAndGetFirst(UserQueries.getAuthData, List(username)) {
       case Some(rs) => Some(
         AuthData(
           id = rs.getInt(1),
@@ -22,11 +22,19 @@ object UserActionHandler extends ActionHandler {
       case None => throw ApiException(FailureMessages.LOGIN_INCORRECT)
     }
 
-  def usernameExists(username: String)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(UserQueries.checkUsernameExists, List(username))(_.nonEmpty)
+  def usernameIsNotTaken(username: String)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Unit] =
+    runAndGetFirst(UserQueries.checkUsernameExists, List(username)) { user =>
+      if (user.nonEmpty) throw ApiException(FailureMessages.USERNAME_EXISTS)
+      else ()
+    }
 
-  def userIdExists(id: Int)(implicit connectionPool: HikariDataSource): Boolean =
-    runAndGetFirst(UserQueries.getUser, List(id))(_.nonEmpty)
+  def userIdExists(id: Int)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Unit] =
+    runAndGetFirst(UserQueries.getUser, List(id)) { user =>
+      if (user.isEmpty) throw ApiException(FailureMessages.USER_NOT_FOUND)
+      else ()
+    }
 
   def checkPasswordIsValid(password: String): Boolean =
     password.length > 7 &&
@@ -34,14 +42,14 @@ object UserActionHandler extends ActionHandler {
       password.matches(".*[a-z].*") &&
       password.matches(".*[A-Z].*")
 
-  def createUser(user: CreatableUser)(implicit connectionPool: HikariDataSource): Result[User] =
+  def createUser(user: CreatableUser)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Result[User]] =
     if (!checkPasswordIsValid(user.password))
       throw ApiException(FailureMessages.PASSWORD_INVALID)
-    else if (usernameExists(user.username))
-      throw ApiException(FailureMessages.USERNAME_EXISTS)
-    else {
-      val hashedPassword = HashPassword(user.password)
-      runAndGetFirst(
+    else for {
+      _ <- usernameIsNotTaken(user.username)
+      hashedPassword = HashPassword(user.password)
+      u <- runAndGetFirst(
         UserQueries.createUser,
         List(
           user.username,
@@ -64,9 +72,10 @@ object UserActionHandler extends ActionHandler {
         )
         case None => throw ApiException(FailureMessages.GENERIC)
       }
-    }
+    } yield u
 
-  private def getUserServers(id: Int)(implicit connectionPool: HikariDataSource): List[UserServerRole] =
+  private def getUserServers(id: Int)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[List[UserServerRole]] =
     runAndIterate(
       UserQueries.getUserServers,
       List(id),
@@ -80,14 +89,13 @@ object UserActionHandler extends ActionHandler {
       )
     )
 
-  def getUser(id: Int)(implicit connectionPool: HikariDataSource): Result[User] =
-    runAndGetFirst(
-      UserQueries.getUser,
-      List(id)
-    ) {
+  def getUser(id: Int)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Result[User]] =
+    runAndGetFirst(UserQueries.getUser, List(id)) {
       case Some(rs) =>
-        val servers = getUserServers(id)
-        Success(
+        val userFuture = for {
+          servers <- getUserServers(id)
+        } yield Success(
           result = Some(
             User(
               id,
@@ -98,14 +106,13 @@ object UserActionHandler extends ActionHandler {
           ),
           message = None
         )
+        Await.result(userFuture, 5 seconds)
       case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
     }
 
-  def getUserAsChildElement(id: Int)(implicit connectionPool: HikariDataSource): ChildUser =
-    runAndGetFirst(
-      UserQueries.getUser,
-      List(id)
-    ) {
+  def getUserAsChildElement(id: Int)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[ChildUser] =
+    runAndGetFirst(UserQueries.getUser, List(id)) {
       case Some(rs) => ChildUser(
         id,
         username = rs.getString(1),
@@ -114,23 +121,23 @@ object UserActionHandler extends ActionHandler {
       case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
     }
 
-  def updateUser(id: Int, user: UpdatableUser)(implicit connectionPool: HikariDataSource): Result[User] = {
-    runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
-    val userResult = getUser(id)
-    Success(
-      result = userResult.result,
+  def updateUser(id: Int, user: UpdatableUser)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Result[User]] =
+    for {
+      _ <- runUpdate(UserQueries.updateUser, user.toParameterList :+ id)
+      user <- getUser(id)
+    } yield Success(
+      result = user.result,
       message = Some("User updated successfully.")
     )
-  }
 
-  def deleteUser(id: Int)(implicit connectionPool: HikariDataSource): Result[NoRootElement] =
-    if (!userIdExists(id))
-      throw ApiException(FailureMessages.USER_NOT_FOUND)
-    else {
-      runUpdate(UserQueries.deleteUser, List(id, id, id, id, id))
-      Success(
-        result = None,
-        message = Some("User deleted.")
-      )
-    }
+  def deleteUser(id: Int)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Result[NoRootElement]] =
+    for {
+      _ <- userIdExists(id)
+      _ <- runUpdate(UserQueries.deleteUser, List(id, id, id, id, id))
+    } yield Success(
+      result = None,
+      message = Some("User deleted.")
+    )
 }

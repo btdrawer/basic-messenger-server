@@ -1,12 +1,14 @@
 package model
 
 import com.zaxxer.hikari.HikariDataSource
-
 import authentication.HashPassword
-import database.handlers.UserActionHandler.{checkPasswordIsValid, usernameExists}
+import database.handlers.UserActionHandler.{checkPasswordIsValid, usernameIsNotTaken}
+
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
 sealed trait Updatable {
-  def toParameterList(implicit connectionPool: HikariDataSource): List[Any]
+  def toParameterList(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): List[Any]
 }
 
 case class UpdatableUser(
@@ -15,11 +17,16 @@ case class UpdatableUser(
   status: Option[Status.Value],
   passwordReset: Option[CreatablePasswordReset]
 ) extends Updatable {
-  override def toParameterList(implicit connectionPool: HikariDataSource): List[Any] = {
-    val username = this.username.flatMap(u =>
-      if (usernameExists(u)) throw ApiException(FailureMessages.USERNAME_EXISTS)
-      else Some(u)
-    ).orNull
+  override def toParameterList(
+    implicit connectionPool: HikariDataSource,
+    executionContext: ExecutionContext
+  ): List[Any] = {
+    val username = this.username.map(u => {
+      val usernameFuture = for {
+        _ <- usernameIsNotTaken(u)
+      } yield u
+      Await.result(usernameFuture, 2 seconds)
+    }).orNull
     val hashedPassword = this.password.flatMap(p =>
       if (!checkPasswordIsValid(p)) throw ApiException(FailureMessages.PASSWORD_INVALID)
       else Some(HashPassword(p))
@@ -48,5 +55,8 @@ case class UpdatableUser(
 }
 
 case class UpdatableServer(name: Option[String]) extends Updatable {
-  override def toParameterList(implicit connectionPool: HikariDataSource): List[Any] = List(name.orNull)
+  override def toParameterList(
+    implicit connectionPool: HikariDataSource,
+    executionContext: ExecutionContext
+  ): List[Any] = List(name.orNull)
 }

@@ -19,7 +19,7 @@ case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, exec
             entity(as[CreatableMessage]) { message =>
               authenticateMember(server) { id =>
                 val result: Future[Result[ServerMessage]] =
-                  Future(MessageActionHandler.createServerMessage(message, server, id))
+                  MessageActionHandler.createServerMessage(message, server, id)
                 onComplete(result)(complete(_))
               }
             }
@@ -30,11 +30,11 @@ case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, exec
             Symbol("offset").as[Int].optional
           ) { (limit, offset) =>
             authenticateMember(server) { _ =>
-              val result: Future[List[ChildMessage]] = Future(MessageActionHandler.getServerMessages(
+              val result: Future[List[ChildMessage]] = MessageActionHandler.getServerMessages(
                 server,
                 limit.getOrElse(100),
                 offset.getOrElse(0)
-              ))
+              )
               onComplete(result)(complete(_))
             }
           }
@@ -45,7 +45,7 @@ case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, exec
             entity(as[CreatableMessage]) { message =>
               authenticateUser { id =>
                 val result: Future[Result[DirectMessage]] =
-                  Future(MessageActionHandler.createDirectMessage(message, recipient, id))
+                  MessageActionHandler.createDirectMessage(message, recipient, id)
                 onComplete(result)(complete(_))
               }
             }
@@ -56,12 +56,12 @@ case class MessageRouteHandler()(implicit connectionPool: HikariDataSource, exec
             Symbol("offset").as[Int].optional
           ) { (limit, offset) =>
             authenticateUser { id =>
-              val result: Future[List[ChildMessage]] = Future(MessageActionHandler.getDirectMessages(
+              val result: Future[List[ChildMessage]] = MessageActionHandler.getDirectMessages(
                 id,
                 recipient,
                 limit.getOrElse(100),
                 offset.getOrElse(0)
-              ))
+              )
               onComplete(result)(complete(_))
             }
           }

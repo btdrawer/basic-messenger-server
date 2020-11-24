@@ -16,27 +16,27 @@ case class UserRouteHandler()(implicit connectionPool: HikariDataSource, executi
       post {
         decodeRequest {
           entity(as[CreatableUser]) { user =>
-            val result: Future[Result[User]] = Future(UserActionHandler.createUser(user))
+            val result: Future[Result[User]] = UserActionHandler.createUser(user)
             onComplete(result)(complete(_))
           }
         }
       } ~ get {
         path(IntNumber) { id =>
-          val result: Future[Result[User]] = Future(UserActionHandler.getUser(id))
+          val result: Future[Result[User]] = UserActionHandler.getUser(id)
           onComplete(result)(complete(_))
         }
       } ~ put {
         authenticateUser { id =>
           decodeRequest {
             entity(as[UpdatableUser]) { user =>
-              val result: Future[Result[User]] = Future(UserActionHandler.updateUser(id, user))
+              val result: Future[Result[User]] = UserActionHandler.updateUser(id, user)
               onComplete(result)(complete(_))
             }
           }
         }
       } ~ delete {
         authenticateUser { id =>
-          val result: Future[Result[NoRootElement]] = Future(UserActionHandler.deleteUser(id))
+          val result: Future[Result[NoRootElement]] = UserActionHandler.deleteUser(id)
           onComplete(result)(complete(_))
         }
       }

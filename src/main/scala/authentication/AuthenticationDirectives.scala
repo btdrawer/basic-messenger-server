@@ -3,10 +3,11 @@ package authentication
 import akka.http.scaladsl.server.Directives.authenticateBasic
 import akka.http.scaladsl.server.directives.AuthenticationDirective
 import com.zaxxer.hikari.HikariDataSource
-
 import model.Role
 
-class AuthenticationDirectives(implicit connectionPool: HikariDataSource) {
+import scala.concurrent.ExecutionContext
+
+class AuthenticationDirectives(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext) {
   final val REALM: String = "basic-messenger"
 
   private def authenticateRoles(roles: List[Role.Value], server: Int): AuthenticationDirective[Int] =
