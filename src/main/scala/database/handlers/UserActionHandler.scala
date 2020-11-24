@@ -91,24 +91,24 @@ object UserActionHandler extends ActionHandler {
 
   def getUser(id: Int)
       (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Result[User]] =
-    runAndGetFirst(UserQueries.getUser, List(id)) {
-      case Some(rs) =>
-        val userFuture = for {
-          servers <- getUserServers(id)
-        } yield Success(
-          result = Some(
-            User(
-              id,
-              username = rs.getString(1),
-              servers,
-              status = Status.withName(rs.getString(2))
-            )
-          ),
-          message = None
-        )
-        Await.result(userFuture, 5 seconds)
-      case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
-    }
+    for {
+      servers <- getUserServers(id)
+      result <- runAndGetFirst(UserQueries.getUser, List(id)) {
+        case Some(rs) =>
+          Success(
+            result = Some(
+              User(
+                id,
+                username = rs.getString(1),
+                servers,
+                status = Status.withName(rs.getString(2))
+              )
+            ),
+            message = None
+          )
+        case None => throw ApiException(FailureMessages.USER_NOT_FOUND)
+      }
+    } yield result
 
   def getUserAsChildElement(id: Int)
       (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[ChildUser] =
