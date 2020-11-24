@@ -4,7 +4,6 @@ import java.sql.Timestamp
 import java.time.Instant
 
 import com.zaxxer.hikari.HikariDataSource
-
 import model._
 import database.queries.MessageQueries
 

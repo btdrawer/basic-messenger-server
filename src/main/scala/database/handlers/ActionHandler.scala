@@ -6,10 +6,13 @@ import com.zaxxer.hikari.HikariDataSource
 import model.JsonConverters
 
 import scala.annotation.tailrec
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.Using
 
 trait ActionHandler extends JsonConverters {
-  private def prepareStatement(query: String, parameters: List[Any])(connection: Connection): PreparedStatement = {
+  private def prepareStatement(
+    query: String,
+    parameters: List[Any]
+  )(connection: Connection): PreparedStatement = {
     val statement = connection.prepareStatement(
       query,
       ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -21,48 +24,49 @@ trait ActionHandler extends JsonConverters {
     statement
   }
 
-  private def run[T](
-    query: String,
-    parameters: List[Any],
-    executeStatement: PreparedStatement => T
-  )(implicit connectionPool: HikariDataSource): T = {
-    val result = Using.Manager { use =>
-      val connection = use(connectionPool.getConnection())
-      val statement = use(prepareStatement(query, parameters)(connection))
-      executeStatement(statement)
-    }
-    result
+  private def withUsingManager[T](fn: Using.Manager => T)(implicit connectionPool: HikariDataSource): T =
+    Using.Manager(fn)
       .recover {
         case exception: Exception => throw exception
       }
       .get
-  }
 
-  private def runQuery(query: String, parameters: List[Any])(implicit connectionPool: HikariDataSource): ResultSet =
+  private def run[T](
+    query: String,
+    parameters: List[Any],
+    executeStatement: PreparedStatement => T
+  )(implicit connectionPool: HikariDataSource): T =
+    withUsingManager { use =>
+      val connection = use(connectionPool.getConnection())
+      val statement = use(prepareStatement(query, parameters)(connection))
+      executeStatement(statement)
+    }
+
+  private def runQuery(
+    query: String,
+    parameters: List[Any]
+  )(implicit connectionPool: HikariDataSource): ResultSet =
     run(query, parameters, _.executeQuery())
 
-  def runUpdate(query: String, parameters: List[Any])(implicit connectionPool: HikariDataSource): Int =
+  def runUpdate(
+    query: String,
+    parameters: List[Any]
+  )(implicit connectionPool: HikariDataSource): Int =
     run(query, parameters, _.executeUpdate())
 
   def runAndGetFirst[T](
     query: String,
     parameters: List[Any]
-  )(processor: Option[ResultSet] => T)(implicit connectionPool: HikariDataSource): T = {
-    val result = Using.Manager { use =>
+  )(processor: Option[ResultSet] => T)(implicit connectionPool: HikariDataSource): T =
+    withUsingManager { use =>
       val resultSet = use(runQuery(query, parameters))
       resultSet.first()
-      val rsOption = {
+      val resultSetOption = {
         if (resultSet.getRow < 1) None
         else Some(resultSet)
       }
-      processor(rsOption)
+      processor(resultSetOption)
     }
-    result
-      .recover {
-        case exception: Exception => throw exception
-      }
-      .get
-  }
 
   @tailrec
   private def iterateResultSet[T](acc: List[T], resultSet: ResultSet, iterator: ResultSet => T): List[T] =
@@ -73,10 +77,9 @@ trait ActionHandler extends JsonConverters {
     query: String,
     parameters: List[Any],
     iterator: ResultSet => T
-  )(implicit connectionPool: HikariDataSource): List[T] = {
-    val resultSet = runQuery(query, parameters)
-    val result = iterateResultSet(List[T](), resultSet, iterator)
-    resultSet.close()
-    result
-  }
+  )(implicit connectionPool: HikariDataSource): List[T] =
+    withUsingManager { use =>
+      val resultSet = use(runQuery(query, parameters))
+      iterateResultSet(List[T](), resultSet, iterator)
+    }
 }
