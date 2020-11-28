@@ -5,8 +5,7 @@ import model._
 import database.queries.UserQueries
 import authentication.{AuthData, HashPassword}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 object UserActionHandler extends ActionHandler {
   def getAuthData(username: String)

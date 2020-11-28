@@ -11,10 +11,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Using
 
 trait ActionHandler extends JsonConverters {
-  private def prepareStatement(
-    query: String,
-    parameters: List[Any]
-  )(connection: Connection): PreparedStatement = {
+  private def prepareStatement(query: String, parameters: List[Any])(connection: Connection): PreparedStatement = {
     val statement = connection.prepareStatement(
       query,
       ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -33,27 +30,20 @@ trait ActionHandler extends JsonConverters {
       }
       .get
 
-  private def run[T](
-    query: String,
-    parameters: List[Any],
-    executeStatement: PreparedStatement => T
-  )(implicit connectionPool: HikariDataSource): T =
+  private def run[T](query: String, parameters: List[Any], executeStatement: PreparedStatement => T)
+      (implicit connectionPool: HikariDataSource): T =
     withUsingManager { use =>
       val connection = use(connectionPool.getConnection())
       val statement = use(prepareStatement(query, parameters)(connection))
       executeStatement(statement)
     }
 
-  private def runQuery(
-    query: String,
-    parameters: List[Any]
-  )(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[ResultSet] =
+  private def runQuery(query: String, parameters: List[Any])
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[ResultSet] =
     Future(run(query, parameters, _.executeQuery()))
 
-  def runUpdate(
-    query: String,
-    parameters: List[Any]
-  )(implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Int] =
+  def runUpdate(query: String, parameters: List[Any])
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[Int] =
     Future(run(query, parameters, _.executeUpdate()))
 
   def runAndGetFirst[T](query: String, parameters: List[Any])
@@ -81,15 +71,16 @@ trait ActionHandler extends JsonConverters {
     else iterateResultSet(acc :+ iterator(resultSet), resultSet, iterator)
 
   def runAndIterate[T](query: String, parameters: List[Any], iterator: ResultSet => T)
-      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[List[T]] = Future {
-    withUsingManager { use =>
-      val resultSetFuture = for {
-        resultSet <- runQuery(query, parameters)
-      } yield {
-        val usedResultSet = use(resultSet)
-        iterateResultSet(List[T](), usedResultSet, iterator)
+      (implicit connectionPool: HikariDataSource, executionContext: ExecutionContext): Future[List[T]] =
+    Future {
+      withUsingManager { use =>
+        val resultSetFuture = for {
+          resultSet <- runQuery(query, parameters)
+        } yield {
+          val usedResultSet = use(resultSet)
+          iterateResultSet(List[T](), usedResultSet, iterator)
+        }
+        Await.result(resultSetFuture, 5 seconds)
       }
-      Await.result(resultSetFuture, 5 seconds)
     }
-  }
 }
